@@ -1,5 +1,5 @@
 # golang-project-template
-Starting point for a Go project. Ready to use with Docker, Taskfile and Lefthook. You don't need to worry about downloading golang, as it is already included in the Docker image.
+Starting point for a Go project. Ready to use with Docker, Taskfile and Lefthook. You don't need to worry about downloading golang, as it is already included in the Docker image (Golang version: 1.22.0).
 
 ## Requirements
 - [docker](https://www.docker.com/get-started/)
