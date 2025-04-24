@@ -4,8 +4,8 @@ Starting point for a Go project. Ready to use with Docker, Taskfile and Lefthook
 ## Requirements
 - [docker](https://www.docker.com/get-started/)
 - [task command](https://taskfile.dev/installation/) (for executing commands easier)
-- [Lefthook](https://github.com/evilmartians/lefthook) (optional: if you want to use pre-commit hooks for github)
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) (optional: if you want to use Lefthook)
+- [Lefthook](https://github.com/evilmartians/lefthook) (optional: if you want to use pre-commit hooks for github)
 
 ## Initialization
 If you want to use Lefthook, run the following command:
