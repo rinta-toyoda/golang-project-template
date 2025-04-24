@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:15
+    container_name: tech-job_db
+    command: -c 'config_file=/etc/postgresql/postgresql.conf'
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "15432:5432"
+    volumes:
+      - database:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
+    env_file:
+      - .env
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_app
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@tech-job_db:5432/${POSTGRES_DB}
+    depends_on:
+      - db
+    restart: always
+    env_file:
+      - .env
+  lint:
+    image: golangci/golangci-lint:v1.56.2
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: golangci-lint run
+
+volumes:
+  database:
+    driver: local

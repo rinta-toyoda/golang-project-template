@@ -1,0 +1,17 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - docker-compose up -d db app
+  lint:
+    cmds:
+      - docker-compose run --rm lint
+  down:
+    cmds:
+      - docker-compose down
+  destroy:
+    cmds:
+      - docker compose down --rmi all --volumes --remove-orphans

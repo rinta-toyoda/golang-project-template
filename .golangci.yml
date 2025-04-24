@@ -1,0 +1,17 @@
+run:
+  timeout: 3m
+  tests: true
+
+linters:
+  enable:
+    - staticcheck
+    - gosimple
+    - unused
+    - errcheck
+    - deadcode
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
