@@ -7,6 +7,4 @@ RUN go mod download
 
 COPY . .
 
-WORKDIR /app/src
-
-CMD ["go", "run", "main.go"]
+CMD ["go", "run", "./cmd/server"]

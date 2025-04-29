@@ -1,0 +1,8 @@
+README.md
+example.com-backend.iml
+Dockerfile
+docker-compose.yml
+.golangci.yml
+.gitignore
+lefthook.yml
+Taskfile.yml

@@ -5,7 +5,11 @@ version: '3'
 tasks:
   default:
     cmds:
-      - docker-compose up -d db app
+      - docker-compose up -d db
+      - docker-compose up --build app
+  bash:
+    cmds:
+      - docker-compose exec app bash
   lint:
     cmds:
       - docker-compose run --rm lint
