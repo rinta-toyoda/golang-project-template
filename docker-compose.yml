@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile
     container_name: go_app
     volumes:
-      - ./cmd/server:/app/cmd/server
+      - .:/app:cached
     ports:
       - "8080:8080"
     environment:

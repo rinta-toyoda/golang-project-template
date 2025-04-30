@@ -6,6 +6,10 @@ tasks:
   default:
     cmds:
       - docker-compose up -d db
+      - docker-compose up app
+  install:
+    cmds:
+      - docker-compose up --build -d db
       - docker-compose up --build app
   bash:
     cmds:
@@ -19,3 +23,6 @@ tasks:
   destroy:
     cmds:
       - docker-compose down --rmi all --volumes --remove-orphans
+  db:
+    cmds:
+      - docker-compose exec db psql -U "user" "tech-job"

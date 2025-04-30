@@ -1,4 +1,6 @@
 
 # IntelliJ related
 .idea
-example.com-backend.iml
+*.iml
+*.log
+tmp
