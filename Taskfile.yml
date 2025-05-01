@@ -14,6 +14,12 @@ tasks:
   bash:
     cmds:
       - docker-compose exec app bash
+  test:
+    cmds:
+      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./tests/...
+  coverage:
+    cmds:
+      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 -covermode=atomic -coverpkg="$(go list ./internal/...)"  ./...
   lint:
     cmds:
       - docker-compose run --rm lint
