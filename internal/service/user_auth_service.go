@@ -8,20 +8,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type AuthService interface {
+type UserAuthService interface {
 	Signup(email, phone, password string) (string, error)
 	Login(email, password string) (string, error)
 }
 
-type authService struct {
+type userAuthService struct {
 	userRepository repository.UserRepository
 }
 
-func NewAuthService(userRepository repository.UserRepository) AuthService {
-	return &authService{userRepository}
+func NewUserAuthService(userRepository repository.UserRepository) UserAuthService {
+	return &userAuthService{userRepository}
 }
 
-func (service *authService) Signup(email, phone, password string) (string, error) {
+func (service *userAuthService) Signup(email, phone, password string) (string, error) {
 	// Validate email and phone
 	if _, err := service.userRepository.FindByEmail(email); err == nil {
 		return "", errors.New("email already registered")
@@ -51,7 +51,7 @@ func (service *authService) Signup(email, phone, password string) (string, error
 	return token, nil
 }
 
-func (service *authService) Login(email, password string) (string, error) {
+func (service *userAuthService) Login(email, password string) (string, error) {
 	user, err := service.userRepository.FindByEmail(email)
 	if err != nil {
 		return "", err

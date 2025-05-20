@@ -26,14 +26,14 @@ func TestMain(m *testing.M) {
 func TestUserCanSignup(t *testing.T) {
 	// Arrange
 	repository := utils.NewFakeUserRepository()
-	authService := service.NewAuthService(repository)
+	userAuthService := service.NewUserAuthService(repository)
 
 	request := dto.SignupRequest{
 		Email:    "foo@example.com",
 		Phone:    "+1234567890",
 		Password: "password123",
 	}
-	token, err := authService.Signup(request.Email, request.Phone, request.Password)
+	token, err := userAuthService.Signup(request.Email, request.Phone, request.Password)
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token, "expected a JWT token on signup success")
@@ -50,7 +50,7 @@ func TestUserCanSignup(t *testing.T) {
 func TestUserCannotSignupWithExistingEmail(t *testing.T) {
 	// arrange
 	repository := utils.NewFakeUserRepository()
-	authService := service.NewAuthService(repository)
+	userAuthService := service.NewUserAuthService(repository)
 
 	existing := &model.User{ID: uuid.NewString(), Email: "dup@example.com", Phone: "+111"}
 	err := repository.Create(existing)
@@ -58,7 +58,7 @@ func TestUserCannotSignupWithExistingEmail(t *testing.T) {
 
 	// act
 	// Preload an existing user with the same email
-	token, err := authService.Signup(existing.Email, "+222", "pw")
+	token, err := userAuthService.Signup(existing.Email, "+222", "pw")
 
 	assert.Error(t, err)
 	assert.Empty(t, token)
@@ -68,7 +68,7 @@ func TestUserCannotSignupWithExistingEmail(t *testing.T) {
 func TestUserCannotSignupWithExistingPhone(t *testing.T) {
 	// arrange
 	repository := utils.NewFakeUserRepository()
-	authService := service.NewAuthService(repository)
+	userAuthService := service.NewUserAuthService(repository)
 
 	existing := &model.User{ID: uuid.NewString(), Email: "example@example.com", Phone: "+111"}
 	err := repository.Create(existing)
@@ -76,7 +76,7 @@ func TestUserCannotSignupWithExistingPhone(t *testing.T) {
 
 	// act
 	// Preload an existing user with the same email
-	token, err := authService.Signup("owner@example.com", existing.Phone, "pw")
+	token, err := userAuthService.Signup("owner@example.com", existing.Phone, "pw")
 
 	assert.Error(t, err)
 	assert.Empty(t, token)
@@ -94,8 +94,8 @@ func TestUserCanLogin(t *testing.T) {
 	assert.NoError(t, err)
 
 	// act
-	authService := service.NewAuthService(repository)
-	token, err := authService.Login(user.Email, password)
+	userAuthService := service.NewUserAuthService(repository)
+	token, err := userAuthService.Login(user.Email, password)
 
 	// assert
 	assert.NoError(t, err)
@@ -110,14 +110,14 @@ func TestUserCannotLoginWithInvalidCredentials(t *testing.T) {
 	user := &model.User{ID: uuid.NewString(), Email: "user@example.com", Phone: "+1010", PasswordHash: string(hash)}
 	err := repository.Create(user)
 	assert.NoError(t, err)
-	authService := service.NewAuthService(repository)
+	userAuthService := service.NewUserAuthService(repository)
 
 	// act
 	// Wrong password
-	token, err := authService.Login("user@example.com", "wrong")
+	token, err := userAuthService.Login("user@example.com", "wrong")
 
 	// Non-existent user
-	token2, err2 := authService.Login("nope@example.com", "pw")
+	token2, err2 := userAuthService.Login("nope@example.com", "pw")
 
 	// assert
 	assert.Error(t, err)

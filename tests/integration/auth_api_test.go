@@ -69,8 +69,8 @@ func setupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.New()
 
 	repo := repository.NewUserRepository(db)
-	svc := service.NewAuthService(repo)
-	h := auth.NewAuthHandler(svc)
+	svc := service.NewUserAuthService(repo)
+	h := auth.NewUserAuthHandler(svc)
 
 	grp := r.Group("/auth")
 	{
@@ -97,7 +97,7 @@ func TestUserCanSignup(t *testing.T) {
 		"password": "password123",
 	}
 	body, _ := json.Marshal(signupPayload)
-	request := httptest.NewRequest("POST", "/auth/signup", bytes.NewReader(body))
+	request := httptest.NewRequest("POST", "/auth/user/signup", bytes.NewReader(body))
 	request.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, request)
@@ -174,7 +174,7 @@ func TestUserCannotSignupWithInvalidData(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			body, _ := json.Marshal(test.payload)
-			request := httptest.NewRequest("POST", "/auth/signup", bytes.NewReader(body))
+			request := httptest.NewRequest("POST", "/auth/user/signup", bytes.NewReader(body))
 			request.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, request)
@@ -202,7 +202,7 @@ func TestUserCanLogin(t *testing.T) {
 			"password": "password123",
 		}
 		body, _ := json.Marshal(signupPayload)
-		request := httptest.NewRequest("POST", "/auth/signup", bytes.NewReader(body))
+		request := httptest.NewRequest("POST", "/auth/user/signup", bytes.NewReader(body))
 		request.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, request)
@@ -215,7 +215,7 @@ func TestUserCanLogin(t *testing.T) {
 		"password": "password123",
 	}
 	body, _ := json.Marshal(loginPayload)
-	request := httptest.NewRequest("POST", "/auth/login", bytes.NewReader(body))
+	request := httptest.NewRequest("POST", "/auth/user/login", bytes.NewReader(body))
 	request.Header.Set("Content-Type", "application/json")
 	w2 := httptest.NewRecorder()
 	router.ServeHTTP(w2, request)
@@ -247,7 +247,7 @@ func TestUserCannotLoginWithInvalidData(t *testing.T) {
 			"password": "password123",
 		}
 		body, _ := json.Marshal(signupPayload)
-		request := httptest.NewRequest("POST", "/auth/signup", bytes.NewReader(body))
+		request := httptest.NewRequest("POST", "/auth/user/signup", bytes.NewReader(body))
 		request.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, request)
@@ -293,7 +293,7 @@ func TestUserCannotLoginWithInvalidData(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
 			body, _ := json.Marshal(test.payload)
-			request := httptest.NewRequest("POST", "/auth/login", bytes.NewReader(body))
+			request := httptest.NewRequest("POST", "/auth/user/login", bytes.NewReader(body))
 			request.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, request)

@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: Tech Job
-  description: A API for managing Tech Job posting and application.
+  title: Template
+  description: A API for managing Template posting and application.
   version: 1.0.0
 
 servers:

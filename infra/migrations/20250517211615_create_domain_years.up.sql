@@ -1,0 +1,2 @@
+CREATE DOMAIN years AS NUMERIC(3,1)
+    CHECK (VALUE >= 0);

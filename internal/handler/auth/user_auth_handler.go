@@ -7,27 +7,27 @@ import (
 	"net/http"
 )
 
-type Handler interface {
+type UserAuthHandler interface {
 	Signup(ctx *gin.Context)
 	Login(ctx *gin.Context)
 }
 
-type handler struct {
-	authService service.AuthService
+type userAuthHandler struct {
+	userAuthService service.UserAuthService
 }
 
-func NewAuthHandler(auth service.AuthService) Handler {
-	return &handler{authService: auth}
+func NewUserAuthHandler(auth service.UserAuthService) UserAuthHandler {
+	return &userAuthHandler{userAuthService: auth}
 }
 
-func (h handler) Signup(c *gin.Context) {
+func (h userAuthHandler) Signup(c *gin.Context) {
 	var request dto.SignupRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	token, err := h.authService.Signup(request.Email, request.Phone, request.Password)
+	token, err := h.userAuthService.Signup(request.Email, request.Phone, request.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -40,14 +40,14 @@ func (h handler) Signup(c *gin.Context) {
 	c.JSON(http.StatusCreated, response)
 }
 
-func (h handler) Login(c *gin.Context) {
+func (h userAuthHandler) Login(c *gin.Context) {
 	var request dto.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	token, err := h.authService.Login(request.Email, request.Password)
+	token, err := h.userAuthService.Login(request.Email, request.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
