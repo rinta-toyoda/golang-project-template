@@ -67,6 +67,8 @@ This project follows Clean Architecture principles with the following structure:
 | `task generate` | Generate code from OpenAPI specs |
 | `task migrate` | Run database migrations |
 | `task seed` | Seed database with test data |
+| `task ci` | Run all CI checks locally |
+| `task install-tools` | Install development tools |
 | `task down` | Stop all services |
 | `task destroy` | Remove all containers and data |
 
@@ -112,3 +114,34 @@ This application uses XSRF tokens for security:
 2. Include token in header: `X-XSRF-TOKEN: <token>`
 3. Server verifies header token matches cookie token
 4. Required for all POST requests to `/auth/*` and `/api/v1/auth/*`
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration and deployment:
+
+### Automated Checks
+- **Linting**: golangci-lint with comprehensive rule set
+- **Testing**: Unit and integration tests with PostgreSQL
+- **Security**: Gosec security scanner
+- **Code Quality**: Static analysis and formatting checks
+- **Coverage**: Code coverage reporting with Codecov
+
+### Workflows
+- **CI Pipeline**: Runs on every push and pull request
+- **Dependency Updates**: Automated via Dependabot (weekly)
+- **Security Scanning**: Integrated into CI pipeline
+
+### Local Development
+Run the same checks locally:
+```bash
+# Install development tools
+task install-tools
+
+# Run all CI checks (recommended before committing)
+task ci
+
+# Individual checks
+task lint          # golangci-lint
+task test          # tests with database
+task fmt           # format code
+```

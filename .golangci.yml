@@ -1,17 +1,61 @@
 version: "2"
 
 run:
-  timeout: 3m
+  timeout: 5m
   tests: true
+
+linters-settings:
+  gci:
+    local-prefixes: example.com
+  goimports:
+    local-prefixes: example.com
+  govet:
+    check-shadowing: true
+  lll:
+    line-length: 140
+  misspell:
+    locale: US
+  goconst:
+    min-len: 2
+    min-occurrences: 3
+  gocyclo:
+    min-complexity: 15
+  funlen:
+    lines: 100
+    statements: 50
 
 linters:
   enable:
-    - staticcheck
-    - unused
+    - bodyclose
     - errcheck
+    - exportloopref
+    - gochecknoinits
+    - goconst
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
 
 issues:
   exclude-rules:
     - path: _test\.go
       linters:
         - errcheck
+        - goconst
+        - funlen
+    - path: cmd/
+      linters:
+        - gochecknoinits

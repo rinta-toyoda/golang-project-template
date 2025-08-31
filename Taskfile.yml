@@ -118,3 +118,14 @@ tasks:
       - docker-compose -f deployments/docker/docker-compose.yml exec app migrate -path deployments/migrations/migrations -database "$$DATABASE_URL" force -1
       - docker-compose -f deployments/docker/docker-compose.yml exec app migrate -path deployments/migrations/migrations -database "$$DATABASE_URL" up
 
+  ci:
+    desc: Run all CI checks locally
+    cmds:
+      - ./scripts/ci-checks.sh
+
+  install-tools:
+    desc: Install development tools
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+
