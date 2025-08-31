@@ -3,11 +3,14 @@ package service
 import (
 	"context"
 	"errors"
+	"time"
 
+	"github.com/google/uuid"
+
+	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/domain/entity"
 	"example.com/internal/domain/repository"
 	"example.com/pkg/security"
-	"github.com/google/uuid"
 )
 
 var (
@@ -17,19 +20,8 @@ var (
 )
 
 type AuthService interface {
-	SignUp(ctx context.Context, req SignUpRequest) (*entity.User, error)
-	Login(ctx context.Context, req LoginRequest) (*entity.User, error)
-}
-
-type SignUpRequest struct {
-	Email    string
-	Username string
-	Password string
-}
-
-type LoginRequest struct {
-	Identifier string // email or username
-	Password   string
+	SignUp(ctx context.Context, req authapi.SignupRequest) (*authapi.SignupResponse, error)
+	Login(ctx context.Context, req authapi.LoginRequest) (*authapi.LoginResponse, error)
 }
 
 type authService struct {
@@ -44,9 +36,11 @@ func NewAuthService(userRepo repository.UserRepository, hasher security.Password
 	}
 }
 
-func (s *authService) SignUp(ctx context.Context, req SignUpRequest) (*entity.User, error) {
-	if _, err := s.userRepo.FindByUserName(ctx, req.Username); err == nil {
-		return nil, ErrUserAlreadyExists
+func (s *authService) SignUp(ctx context.Context, req authapi.SignupRequest) (*authapi.SignupResponse, error) {
+	if req.Username != "" {
+		if _, err := s.userRepo.FindByUserName(ctx, req.Username); err == nil {
+			return nil, ErrUserAlreadyExists
+		}
 	}
 
 	if _, err := s.userRepo.FindByEmail(ctx, req.Email); err == nil {
@@ -69,11 +63,25 @@ func (s *authService) SignUp(ctx context.Context, req SignUpRequest) (*entity.Us
 		return nil, err
 	}
 
-	return user, nil
+	apiUser := authapi.User{
+		Id:        user.ID,
+		Email:     user.Email,
+		Username:  user.UserName,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+	if user.LastLoginAt != nil {
+		apiUser.LastLoginAt = *user.LastLoginAt
+	}
+
+	return &authapi.SignupResponse{
+		User:    apiUser,
+		Message: "User created successfully",
+	}, nil
 }
 
-func (s *authService) Login(ctx context.Context, req LoginRequest) (*entity.User, error) {
-	user, err := s.userRepo.FindByUserNameOrEmail(ctx, req.Identifier)
+func (s *authService) Login(ctx context.Context, req authapi.LoginRequest) (*authapi.LoginResponse, error) {
+	user, err := s.userRepo.FindByUserNameOrEmail(ctx, req.Email)
 	if err != nil {
 		return nil, ErrInvalidCredentials
 	}
@@ -82,5 +90,25 @@ func (s *authService) Login(ctx context.Context, req LoginRequest) (*entity.User
 		return nil, ErrInvalidCredentials
 	}
 
-	return user, nil
+	// Update last login time
+	now := time.Now()
+	user.LastLoginAt = &now
+	if err := s.userRepo.Update(ctx, user); err != nil {
+		// Log error but don't fail login - this is non-critical
+		_ = err
+	}
+
+	apiUser := authapi.User{
+		Id:          user.ID,
+		Email:       user.Email,
+		Username:    user.UserName,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
+		LastLoginAt: now,
+	}
+
+	return &authapi.LoginResponse{
+		User:    apiUser,
+		Message: "Login successful",
+	}, nil
 }

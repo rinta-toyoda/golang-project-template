@@ -3,15 +3,16 @@ package app
 import (
 	"fmt"
 
-	"example.com/internal/infrastructure/config"
-	"example.com/internal/infrastructure/logger"
-	"example.com/internal/interfaces/api"
-	"example.com/internal/interfaces/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/dig"
+
+	"example.com/internal/infrastructure/config"
+	"example.com/internal/infrastructure/logger"
+	"example.com/internal/interfaces/api"
+	"example.com/internal/interfaces/middleware"
 )
 
 type Server struct {
@@ -48,7 +49,10 @@ func NewServer(container *dig.Container) (*Server, error) {
 	if cfg.Server.Env != "production" {
 		corsConfig := cors.DefaultConfig()
 		corsConfig.AllowAllOrigins = true
-		corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "X-XSRF-TOKEN", "X-Requested-With", "X-CSRF-Token", "Authorization"}
+		corsConfig.AllowHeaders = []string{
+			"Origin", "Content-Type", "Accept", "X-XSRF-TOKEN",
+			"X-Requested-With", "X-CSRF-Token", "Authorization",
+		}
 		corsConfig.AllowCredentials = true
 		corsConfig.ExposeHeaders = []string{"Set-Cookie", "X-CSRF-Token"}
 		corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}

@@ -4,10 +4,11 @@ import (
 	"context"
 	"log"
 
+	"github.com/google/uuid"
+
 	"example.com/internal/domain/entity"
 	"example.com/internal/domain/repository"
 	"example.com/pkg/security"
-	"github.com/google/uuid"
 )
 
 func SeedDatabase(userRepo repository.UserRepository, hasher security.PasswordHasher) error {

@@ -10,22 +10,59 @@
 package authapi
 
 import (
+	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
+type AuthService interface {
+	SignUp(ctx context.Context, req SignupRequest) (*SignupResponse, error)
+	Login(ctx context.Context, req LoginRequest) (*LoginResponse, error)
+}
+
 type AuthUserAPI struct {
+	authService AuthService
+}
+
+func NewAuthUserAPI(authService AuthService) *AuthUserAPI {
+	return &AuthUserAPI{
+		authService: authService,
+	}
 }
 
 // Post /auth/user/login
 // Log in a user
 func (api *AuthUserAPI) UserLogin(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: "Invalid request format"})
+		return
+	}
+
+	response, err := api.authService.Login(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, Error{Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // Post /auth/user/signup
 // Sign up a new user
 func (api *AuthUserAPI) UserSignup(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	var req SignupRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: "Invalid request format"})
+		return
+	}
+
+	response, err := api.authService.SignUp(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusConflict, Error{Message: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, response)
 }

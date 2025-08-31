@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/utrack/gin-csrf"
+	csrf "github.com/utrack/gin-csrf"
 )
 
 func CSRF(secret string) gin.HandlerFunc {

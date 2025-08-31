@@ -3,9 +3,10 @@ package database
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"example.com/internal/domain/entity"
 	"example.com/internal/domain/repository"
-	"gorm.io/gorm"
 )
 
 type userRepository struct {

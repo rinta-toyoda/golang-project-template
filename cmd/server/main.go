@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 
+	"gorm.io/gorm"
+
 	"example.com/internal/app"
 	"example.com/internal/infrastructure/database"
-	"gorm.io/gorm"
 )
 
 func main() {

@@ -6,9 +6,9 @@ import (
 )
 
 type Config struct {
+	Security SecurityConfig
 	Server   ServerConfig
 	Database DatabaseConfig
-	Security SecurityConfig
 }
 
 type ServerConfig struct {
@@ -19,11 +19,11 @@ type ServerConfig struct {
 type DatabaseConfig struct {
 	URL      string
 	Host     string
-	Port     int
 	User     string
 	Password string
 	DBName   string
 	SSLMode  string
+	Port     int
 }
 
 type SecurityConfig struct {

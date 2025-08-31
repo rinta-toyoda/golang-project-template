@@ -3,19 +3,20 @@ package database
 import (
 	"fmt"
 
-	"example.com/internal/domain/entity"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"example.com/internal/domain/entity"
 )
 
 type Config struct {
 	Host     string
-	Port     int
 	User     string
 	Password string
 	DBName   string
 	SSLMode  string
+	Port     int
 }
 
 func Connect(cfg Config) (*gorm.DB, error) {

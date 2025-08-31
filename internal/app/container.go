@@ -1,6 +1,9 @@
 package app
 
 import (
+	"go.uber.org/dig"
+	"gorm.io/gorm"
+
 	"example.com/internal/domain/repository"
 	"example.com/internal/domain/service"
 	"example.com/internal/infrastructure/config"
@@ -8,8 +11,6 @@ import (
 	"example.com/internal/infrastructure/logger"
 	"example.com/internal/interfaces/api"
 	"example.com/pkg/security"
-	"go.uber.org/dig"
-	"gorm.io/gorm"
 )
 
 func BuildContainer() (*dig.Container, error) {

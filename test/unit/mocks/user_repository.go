@@ -3,8 +3,9 @@ package mocks
 import (
 	"context"
 
-	"example.com/internal/domain/entity"
 	"github.com/stretchr/testify/mock"
+
+	"example.com/internal/domain/entity"
 )
 
 type MockUserRepository struct {
