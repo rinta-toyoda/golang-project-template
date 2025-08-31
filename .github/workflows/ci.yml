@@ -80,19 +80,20 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # (optional) if you use only-new-issues:
+      # pull-requests: read
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.24.1'
-
-    - name: golangci-lint
-      uses: golangci/golangci-lint-action@v3
-      with:
-        version: v1.64.8
-        args: --out-format=colored-line-number --timeout=5m
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8   # v8 works with golangci-lint v2
+        with:
+          version: v2.4.0                        # or 'latest'
+          args: --timeout=5m
 
   security:
     runs-on: ubuntu-latest
