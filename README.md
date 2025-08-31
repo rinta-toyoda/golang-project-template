@@ -20,7 +20,7 @@ This project follows Clean Architecture principles with the following structure:
 - Clean Architecture with dependency injection (uber/dig)
 - OpenAPI code generation
 - PostgreSQL with GORM
-- JWT authentication with CSRF protection
+- XSRF token authentication with header/cookie verification
 - Session management
 - Docker containerization
 - Comprehensive testing setup
@@ -35,21 +35,28 @@ This project follows Clean Architecture principles with the following structure:
 
 ## Quick Start
 
-1. Install Lefthook for git hooks:
+1. Setup the development environment:
    ```bash
-   npx lefthook install
+   task setup
    ```
 
 2. Start the development environment:
    ```bash
-   task install
+   task up
+   ```
+
+   Or run both setup and start in one command:
+   ```bash
+   task
    ```
 
 ## Development Commands
 
 | Command | Description |
 |---------|-------------|
-| `task` | Start development environment |
+| `task` | Setup and start development environment |
+| `task setup` | Setup development environment only |
+| `task up` | Start services in development mode |
 | `task build` | Build the application |
 | `task test` | Run all tests |
 | `task test:unit` | Run unit tests only |
@@ -58,6 +65,8 @@ This project follows Clean Architecture principles with the following structure:
 | `task lint` | Run code linting |
 | `task fmt` | Format Go code |
 | `task generate` | Generate code from OpenAPI specs |
+| `task swagger` | Start Swagger UI for auth API (port 8081) |
+| `task swagger:v1` | Start Swagger UI for v1 API (port 8081) |
 | `task migrate` | Run database migrations |
 | `task seed` | Seed database with test data |
 | `task down` | Stop all services |
@@ -86,9 +95,23 @@ This project follows Clean Architecture principles with the following structure:
 Set the following environment variables:
 
 - `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET_KEY` - Secret key for JWT tokens
+- `CSRF_SECRET` - Secret key for XSRF token generation
+- `SESSION_SECRET` - Secret key for session management
 - `PORT` - Server port (default: 8080)
 
 ## API Documentation
 
 OpenAPI specifications are located in the `api/` directory. Use `task generate` to regenerate API code after making changes to the specifications.
+
+View API documentation with Swagger UI:
+- Auth API: `task swagger` (opens on http://localhost:8081)
+- V1 API: `task swagger:v1` (opens on http://localhost:8081)
+
+## XSRF Token Authentication
+
+This application uses XSRF tokens for security:
+
+1. Get XSRF token: `GET /csrf-token`
+2. Include token in header: `X-XSRF-TOKEN: <token>`
+3. Server verifies header token matches cookie token
+4. Required for all POST requests to `/auth/*` and `/api/v1/auth/*`

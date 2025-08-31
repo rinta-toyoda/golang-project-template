@@ -5,7 +5,8 @@ info:
   description: |
     Internal API for managing users, skills and projects.
 servers:
-  - url: /api/v1
+  - url: http://host.docker.internal:8080/api/v1
+  - url: http://localhost:8080/api/v1
 tags:
   - name: User Login API
     description: CRUD operations on User

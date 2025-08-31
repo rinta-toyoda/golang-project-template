@@ -7,6 +7,7 @@ import (
 	"example.com/internal/infrastructure/logger"
 	"example.com/internal/interfaces/api"
 	"example.com/internal/interfaces/middleware"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/dig"
 )
@@ -41,9 +42,17 @@ func NewServer(container *dig.Container) (*Server, error) {
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 
+	// CORS middleware for Swagger UI
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{"http://localhost:8081", "http://127.0.0.1:8081"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "X-XSRF-TOKEN", "X-Requested-With", "X-CSRF-Token"}
+	corsConfig.AllowCredentials = true
+	corsConfig.ExposeHeaders = []string{"Set-Cookie"}
+	engine.Use(cors.New(corsConfig))
+
 	// Middleware
-	engine.Use(middleware.Session(cfg.JWT.SecretKey))
-	engine.Use(middleware.CSRF(cfg.JWT.SecretKey))
+	engine.Use(middleware.Session(cfg.Security.SessionSecret))
+	engine.Use(middleware.CSRF(cfg.Security.CSRFSecret))
 
 	// Routes
 	setupRoutes(engine, authHandler)
@@ -66,12 +75,13 @@ func setupRoutes(engine *gin.Engine, authHandler *api.AuthHandler) {
 	// CSRF token endpoint
 	engine.GET("/csrf-token", middleware.CSRFToken())
 
-	// API routes
+	// API routes with XSRF protection
 	api := engine.Group("/api")
 	{
 		v1 := api.Group("/v1")
 		{
 			auth := v1.Group("/auth")
+			auth.Use(middleware.RequireXSRF())
 			{
 				auth.POST("/signup", authHandler.SignUp)
 				auth.POST("/login", authHandler.Login)
@@ -80,6 +90,10 @@ func setupRoutes(engine *gin.Engine, authHandler *api.AuthHandler) {
 	}
 
 	// Legacy auth routes for backward compatibility
-	engine.POST("/auth/user/signup", authHandler.SignUp)
-	engine.POST("/auth/user/login", authHandler.Login)
+	legacyAuth := engine.Group("/auth/user")
+	legacyAuth.Use(middleware.RequireXSRF())
+	{
+		legacyAuth.POST("/signup", authHandler.SignUp)
+		legacyAuth.POST("/login", authHandler.Login)
+	}
 }

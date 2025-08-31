@@ -2,38 +2,37 @@ services:
   db:
     image: postgres:15
     container_name: example_db
-    command: -c 'config_file=/etc/postgresql/postgresql.conf'
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-app_db}
+      - POSTGRES_HOST_AUTH_METHOD=trust
     ports:
       - "15432:5432"
     volumes:
       - database:/var/lib/postgresql/data
-      - ./docker/dev/postgres/init:/docker-entrypoint-initdb.d
-      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
-    env_file:
-      - .env
+      - ./dev/postgres/init:/docker-entrypoint-initdb.d
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: build/docker/Dockerfile
     container_name: go_app
     volumes:
-      - .:/app:cached
+      - ../../:/app:cached
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@example_db:5432/${POSTGRES_DB}?sslmode=disable
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@example_db:5432/${POSTGRES_DB:-app_db}?sslmode=disable
+      CSRF_SECRET: ${CSRF_SECRET:-development-csrf-secret}
+      SESSION_SECRET: ${SESSION_SECRET:-development-session-secret}
+      PORT: ${PORT:-8080}
+      ENV: ${ENV:-development}
     depends_on:
       - db
-    env_file:
-      - .env
   lint:
-    image: golangci/golangci-lint:v2.1.5-alpine
+    image: golangci/golangci-lint:v1.55-alpine
     volumes:
-      - .:/app
+      - ../../:/app
     working_dir: /app
     command: golangci-lint run
 

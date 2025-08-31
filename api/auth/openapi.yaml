@@ -5,6 +5,7 @@ info:
   description: Routes derived from your Gin router.
 
 servers:
+  - url: http://host.docker.internal:8080
   - url: http://localhost:8080
 
 tags:
@@ -34,7 +35,7 @@ paths:
       summary: Sign up a new user
       operationId: userSignup
       security:
-        - CsrfHeaderAuth: []
+        - XsrfHeaderAuth: []
       requestBody:
         required: true
         content:
@@ -64,7 +65,7 @@ paths:
       summary: Log in a user
       operationId: userLogin
       security:
-        - CsrfHeaderAuth: []
+        - XsrfHeaderAuth: []
       requestBody:
         required: true
         content:
@@ -90,11 +91,11 @@ paths:
 
 components:
   securitySchemes:
-    CsrfHeaderAuth:
+    XsrfHeaderAuth:
       type: apiKey
       in: header
-      name: X-CSRF-Token
-      description: CSRF token from `/csrf-token`, validated against the CSRF cookie.
+      name: X-XSRF-TOKEN
+      description: XSRF token from `/csrf-token`, must match the XSRF cookie value.
 
   schemas:
     CsrfToken:
@@ -104,7 +105,7 @@ components:
       properties:
         token:
           type: string
-          description: Include in `X-CSRF-Token` header
+          description: Include in `X-XSRF-TOKEN` header
 
     SignupRequest:
       type: object

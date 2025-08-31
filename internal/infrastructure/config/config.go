@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 )
@@ -9,7 +8,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
-	JWT      JWTConfig
+	Security SecurityConfig
 }
 
 type ServerConfig struct {
@@ -27,8 +26,9 @@ type DatabaseConfig struct {
 	SSLMode  string
 }
 
-type JWTConfig struct {
-	SecretKey string
+type SecurityConfig struct {
+	CSRFSecret    string
+	SessionSecret string
 }
 
 func Load() (*Config, error) {
@@ -46,13 +46,10 @@ func Load() (*Config, error) {
 			DBName:   getEnvOrDefault("DB_NAME", "app_db"),
 			SSLMode:  getEnvOrDefault("DB_SSLMODE", "disable"),
 		},
-		JWT: JWTConfig{
-			SecretKey: os.Getenv("JWT_SECRET_KEY"),
+		Security: SecurityConfig{
+			CSRFSecret:    getEnvOrDefault("CSRF_SECRET", "csrf-secret-key"),
+			SessionSecret: getEnvOrDefault("SESSION_SECRET", "session-secret-key"),
 		},
-	}
-
-	if cfg.JWT.SecretKey == "" {
-		return nil, fmt.Errorf("JWT_SECRET_KEY environment variable is required")
 	}
 
 	return cfg, nil

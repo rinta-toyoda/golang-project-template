@@ -8,7 +8,13 @@ tasks:
   default:
     desc: Start the development environment
     cmds:
+      - task: setup
       - task: up
+
+  setup:
+    desc: Setup development environment
+    cmds:
+      - ./scripts/dev-setup.sh
 
   install:
     desc: Install and setup the complete environment
@@ -39,6 +45,16 @@ tasks:
     cmds:
       - ./scripts/generate-api.sh
 
+  swagger:
+    desc: Start Swagger UI for API documentation
+    cmds:
+      - docker run --rm -p 8081:8080 -e SWAGGER_JSON=/app/openapi.yaml -v "{{.PWD}}/api/auth:/app" swaggerapi/swagger-ui
+
+  swagger:v1:
+    desc: Start Swagger UI for v1 API documentation
+    cmds:
+      - docker run --rm -p 8081:8080 -e SWAGGER_JSON=/app/openapi.yaml -v "{{.PWD}}/api/v1:/app" swaggerapi/swagger-ui
+
   build:
     desc: Build the application
     cmds:
@@ -47,22 +63,22 @@ tasks:
   test:
     desc: Run all tests
     cmds:
-      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./test/...
+      - CSRF_SECRET="test-csrf-secret" SESSION_SECRET="test-session-secret" go test -parallel 4 ./test/...
 
   test:unit:
     desc: Run unit tests only
     cmds:
-      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./test/unit/...
+      - CSRF_SECRET="test-csrf-secret" SESSION_SECRET="test-session-secret" go test -parallel 4 ./test/unit/...
 
   test:integration:
     desc: Run integration tests only
     cmds:
-      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./test/integration/...
+      - CSRF_SECRET="test-csrf-secret" SESSION_SECRET="test-session-secret" go test -parallel 4 ./test/integration/...
 
   coverage:
     desc: Run tests with coverage report
     cmds:
-      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 -covermode=atomic -coverpkg="$(go list ./internal/...)" ./test/... -coverprofile=build/coverage.out
+      - CSRF_SECRET="test-csrf-secret" SESSION_SECRET="test-session-secret" go test -parallel 4 -covermode=atomic -coverpkg="$(go list ./internal/...)" ./test/... -coverprofile=build/coverage.out
       - go tool cover -html=build/coverage.out -o build/coverage.html
 
   lint:
