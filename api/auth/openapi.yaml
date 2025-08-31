@@ -5,8 +5,8 @@ info:
   description: Routes derived from your Gin router.
 
 servers:
-  - url: http://host.docker.internal:8080
   - url: http://localhost:8080
+  - url: http://host.docker.internal:8080
 
 tags:
   - name: Security

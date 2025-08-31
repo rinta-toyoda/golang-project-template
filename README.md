@@ -65,8 +65,6 @@ This project follows Clean Architecture principles with the following structure:
 | `task lint` | Run code linting |
 | `task fmt` | Format Go code |
 | `task generate` | Generate code from OpenAPI specs |
-| `task swagger` | Start Swagger UI for auth API (port 8081) |
-| `task swagger:v1` | Start Swagger UI for v1 API (port 8081) |
 | `task migrate` | Run database migrations |
 | `task seed` | Seed database with test data |
 | `task down` | Stop all services |
@@ -103,9 +101,8 @@ Set the following environment variables:
 
 OpenAPI specifications are located in the `api/` directory. Use `task generate` to regenerate API code after making changes to the specifications.
 
-View API documentation with Swagger UI:
-- Auth API: `task swagger` (opens on http://localhost:8081)
-- V1 API: `task swagger:v1` (opens on http://localhost:8081)
+View API documentation with built-in Swagger UI:
+- Auth API: http://localhost:8080/docs/index.html (when server is running)
 
 ## XSRF Token Authentication
 

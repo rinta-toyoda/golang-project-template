@@ -9,6 +9,8 @@ import (
 	"example.com/internal/interfaces/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "githu
 	"go.uber.org/dig"
 )
 
@@ -43,12 +45,15 @@ func NewServer(container *dig.Container) (*Server, error) {
 	engine.Use(gin.Recovery())
 
 	// CORS middleware for Swagger UI
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:8081", "http://127.0.0.1:8081"}
-	corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "X-XSRF-TOKEN", "X-Requested-With", "X-CSRF-Token"}
-	corsConfig.AllowCredentials = true
-	corsConfig.ExposeHeaders = []string{"Set-Cookie"}
-	engine.Use(cors.New(corsConfig))
+	if cfg.Server.Env != "production" {
+		corsConfig := cors.DefaultConfig()
+		corsConfig.AllowAllOrigins = true
+		corsConfig.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "X-XSRF-TOKEN", "X-Requested-With", "X-CSRF-Token", "Authorization"}
+		corsConfig.AllowCredentials = true
+		corsConfig.ExposeHeaders = []string{"Set-Cookie", "X-CSRF-Token"}
+		corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+		engine.Use(cors.New(corsConfig))
+	}
 
 	// Middleware
 	engine.Use(middleware.Session(cfg.Security.SessionSecret))
@@ -72,6 +77,13 @@ func (s *Server) Run() error {
 }
 
 func setupRoutes(engine *gin.Engine, authHandler *api.AuthHandler) {
+	// Serve OpenAPI specs first
+	engine.Static("/api/auth", "./api/auth")
+	engine.Static("/api/v1", "./api/v1")
+
+	// Swagger UI endpoints
+	engine.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.URL("/api/auth/openapi.yaml")))
+
 	// CSRF token endpoint
 	engine.GET("/csrf-token", middleware.CSRFToken())
 
