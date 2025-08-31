@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: example.com API
+  version: 1.0.0
+  description: |
+    Internal API for managing users, skills and projects.
+servers:
+  - url: /api/v1
+tags:
+  - name: User Login API
+    description: CRUD operations on User
+
+components:
+  securitySchemes:
+    sessionAuth:        # cookie‑based session (maps to your Gin session middleware)
+      type: apiKey
+      in: cookie
+      name: session_id

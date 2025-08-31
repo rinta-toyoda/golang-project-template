@@ -1,4 +1,5 @@
-# golang project template
+# example.com-backend
+
 Starting point for a Go project. Ready to use with Docker, Taskfile and Lefthook. You don't need to worry about downloading golang, as it is already included in the Docker image.
 
 ## Requirements

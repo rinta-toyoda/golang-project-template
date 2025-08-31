@@ -1,1 +1,0 @@
-DROP DOMAIN IF EXISTS years;

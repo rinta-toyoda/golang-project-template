@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:15
-    container_name: template_db
+    container_name: example_db
     command: -c 'config_file=/etc/postgresql/postgresql.conf'
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -25,7 +25,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@tech-job_db:5432/${POSTGRES_DB}?sslmode=disable
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@example_db:5432/${POSTGRES_DB}?sslmode=disable
     depends_on:
       - db
     env_file:

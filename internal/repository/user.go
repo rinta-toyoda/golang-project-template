@@ -9,7 +9,8 @@ import (
 type UserRepository interface {
 	Create(user *model.User) error
 	FindByEmail(email string) (*model.User, error)
-	FindByPhone(phone string) (*model.User, error)
+	FindByUserName(userName string) (*model.User, error)
+	FindByUserNameOrEmail(userNameOrEmail string) (*model.User, error)
 }
 
 type userRepository struct {
@@ -24,6 +25,14 @@ func (repository *userRepository) Create(user *model.User) error {
 	return repository.db.Create(user).Error
 }
 
+func (repository *userRepository) FindByUserName(userName string) (*model.User, error) {
+	var user model.User
+	if err := repository.db.Where("user_name = ?", userName).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (repository *userRepository) FindByEmail(email string) (*model.User, error) {
 	var user model.User
 	if err := repository.db.Where("email = ?", email).First(&user).Error; err != nil {
@@ -32,9 +41,9 @@ func (repository *userRepository) FindByEmail(email string) (*model.User, error)
 	return &user, nil
 }
 
-func (repository *userRepository) FindByPhone(phone string) (*model.User, error) {
+func (repository *userRepository) FindByUserNameOrEmail(userNameOrEmail string) (*model.User, error) {
 	var user model.User
-	if err := repository.db.Where("phone = ?", phone).First(&user).Error; err != nil {
+	if err := repository.db.Where("user_name = ? OR email = ?", userNameOrEmail, userNameOrEmail).Delete(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

@@ -7,8 +7,8 @@ import (
 
 type User struct {
 	ID           string         `gorm:"primaryKey;type:char(36)" json:"id"`
+	UserName     string         `gorm:"size:15;not null;unique" json:"user_name"`
 	Email        string         `gorm:"size:50;not null;unique" json:"email"`
-	Phone        string         `gorm:"size:15;not null;unique" json:"phone"`
 	PasswordHash string         `gorm:"size:100;not null" json:"-"`
 	CreatedAt    time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`

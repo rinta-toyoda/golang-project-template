@@ -2,8 +2,7 @@ package main
 
 import (
 	"example.com/internal/db"
-	"example.com/internal/routers"
-	"github.com/gin-gonic/gin"
+	"example.com/internal/web"
 	"log"
 	"os"
 )
@@ -19,8 +18,7 @@ func main() {
 		log.Fatalf("failed to connect database: %v", err)
 	}
 
-	server := gin.Default()
-	routers.SetupRouter(server, gormDB)
+	server := web.NewServer(gormDB)
 
 	port := os.Getenv("PORT")
 	if port == "" {

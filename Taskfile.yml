@@ -2,33 +2,70 @@
 
 version: '3'
 
+dotenv: ['.env']
+
 tasks:
   default:
     cmds:
-      - docker-compose up -d db
-      - docker-compose up app
+      - task: up
+
   install:
     cmds:
-      - docker-compose up --build -d db
-      - docker-compose up --build app
+      - docker-compose up --build -d
+      - task: migrate
+
+  up:
+    cmds:
+      - docker-compose up -d db
+      - docker-compose up app
+
+  migrate:
+    cmds:
+      - docker-compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+      - docker-compose exec app go run cmd/migrate/main.go
+      - docker-compose exec app go run cmd/seed/main.go
+
+  seed:
+    cmds:
+      - docker-compose exec app go run cmd/seed/main.go
+
   bash:
     cmds:
       - docker-compose exec app bash
+
   test:
     cmds:
       - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./tests/...
+
   coverage:
     cmds:
       - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 -covermode=atomic -coverpkg="$(go list ./internal/...)"  ./...
+
   lint:
     cmds:
       - docker-compose run --rm lint
+
   down:
     cmds:
       - docker-compose down
+
   destroy:
     cmds:
       - docker-compose down --rmi all --volumes --remove-orphans
+
   db:
     cmds:
-      - docker-compose exec db psql -U "user" "template"
+      - docker-compose exec db psql -U "$POSTGRES_USER" "$POSTGRES_DB"
+  migrate:down:
+    cmds:
+      - docker-compose exec app migrate -path infra/migrations -database "$$DATABASE_URL" down
+
+  migrate:redo:
+    cmds:
+      - docker-compose exec app migrate -path infra/migrations -database "$$DATABASE_URL" force -1
+      - docker-compose exec app migrate -path infra/migrations -database "$$DATABASE_URL" up
+
+  generate-auth-schema:
+    cmds:
+      - openapi-generator generate -i api/auth/openapi.yaml -g go-gin-server -o ./gen/openapi/auth --global-property=apis,models,apiTests=false,apiDocs=false,modelTests=false,modelDocs=false --additional-properties=packageName=authapi,enumClassPrefix=true
+

@@ -1,0 +1,162 @@
+openapi: 3.0.3
+info:
+  title: Auth API
+  version: 1.0.0
+  description: Routes derived from your Gin router.
+
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: Security
+  - name: Auth (User)
+
+paths:
+  /csrf-token:
+    get:
+      tags: [Security]
+      summary: Get CSRF token
+      operationId: getCsrfToken
+      responses:
+        '200':
+          description: CSRF token returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsrfToken'
+              examples:
+                ok:
+                  value: { token: "abcd1234" }
+
+  /auth/user/signup:
+    post:
+      tags: [Auth (User)]
+      summary: Sign up a new user
+      operationId: userSignup
+      security:
+        - CsrfHeaderAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+        '400':
+          description: Bad request
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '409':
+          description: Conflict
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '500':
+          description: Server error
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  /auth/user/login:
+    post:
+      tags: [Auth (User)]
+      summary: Log in a user
+      operationId: userLogin
+      security:
+        - CsrfHeaderAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Bad request
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '401':
+          description: Unauthorized
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+        '500':
+          description: Server error
+          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+components:
+  securitySchemes:
+    CsrfHeaderAuth:
+      type: apiKey
+      in: header
+      name: X-CSRF-Token
+      description: CSRF token from `/csrf-token`, validated against the CSRF cookie.
+
+  schemas:
+    CsrfToken:
+      type: object
+      additionalProperties: false
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: Include in `X-CSRF-Token` header
+
+    SignupRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        username: { type: string }
+
+    SignupResponse:
+      type: object
+      additionalProperties: false
+      required: [user, message]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        message: { type: string, example: account created }
+
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    LoginResponse:
+      type: object
+      additionalProperties: false
+      required: [user, message]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        message: { type: string, example: logged in }
+        # accessToken: { type: string }
+        # refreshToken: { type: string }
+
+    User:
+      type: object
+      additionalProperties: false
+      required: [id, email]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        username: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        lastLoginAt: { type: string, format: date-time }
+
+    Error:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error: { type: string }
+        message: { type: string }

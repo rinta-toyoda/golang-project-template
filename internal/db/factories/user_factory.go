@@ -10,8 +10,8 @@ import (
 func UserFactory(overrides ...func(*model.User)) *model.User {
 	userModel := &model.User{
 		ID:           uuid.NewString(),
+		UserName:     faker.Username(),
 		Email:        faker.Email(),
-		Phone:        faker.Phonenumber(),
 		PasswordHash: faker.Password(),
 		CreatedAt:    time.Now(),
 	}

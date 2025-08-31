@@ -1,5 +1,5 @@
-pre-commit:
-  commands:
-    lint:
-      run: docker-compose run --rm lint
-      stage_fixed: true
+ pre-commit:
+   commands:
+     lint:
+       run: docker-compose run --rm lint
+       stage_fixed: true

@@ -9,8 +9,8 @@ import (
 )
 
 type UserAuthService interface {
-	Signup(email, phone, password string) (string, error)
-	Login(email, password string) (string, error)
+	Signup(userName, email, password string) (string, error)
+	Login(identifier, password string) (string, error)
 }
 
 type userAuthService struct {
@@ -21,13 +21,13 @@ func NewUserAuthService(userRepository repository.UserRepository) UserAuthServic
 	return &userAuthService{userRepository}
 }
 
-func (service *userAuthService) Signup(email, phone, password string) (string, error) {
-	// Validate email and phone
+func (service *userAuthService) Signup(userName, email, password string) (string, error) {
+	// Validate userName and email
+	if _, err := service.userRepository.FindByUserName(userName); err == nil {
+		return "", errors.New("phone already registered")
+	}
 	if _, err := service.userRepository.FindByEmail(email); err == nil {
 		return "", errors.New("email already registered")
-	}
-	if _, err := service.userRepository.FindByPhone(phone); err == nil {
-		return "", errors.New("phone already registered")
 	}
 	hashPassword, err := utils.HashPassword(password)
 	if err != nil {
@@ -36,33 +36,23 @@ func (service *userAuthService) Signup(email, phone, password string) (string, e
 
 	user := &model.User{
 		ID:           uuid.NewString(),
+		UserName:     userName,
 		Email:        email,
-		Phone:        phone,
 		PasswordHash: hashPassword,
 	}
 	if err := service.userRepository.Create(user); err != nil {
 		return "", err
 	}
-	token, err := utils.GenerateToken(user.ID, user.Email)
-
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+	return user.ID, nil
 }
 
-func (service *userAuthService) Login(email, password string) (string, error) {
-	user, err := service.userRepository.FindByEmail(email)
+func (service *userAuthService) Login(identifier, password string) (string, error) {
+	user, err := service.userRepository.FindByUserNameOrEmail(identifier)
 	if err != nil {
 		return "", err
 	}
 	if !utils.CheckPasswordHash(password, user.PasswordHash) {
 		return "", errors.New("invalid credentials")
 	}
-
-	token, err := utils.GenerateToken(user.ID, user.Email)
-	if err != nil {
-		return "", err
-	}
-	return token, nil
+	return user.ID, nil
 }

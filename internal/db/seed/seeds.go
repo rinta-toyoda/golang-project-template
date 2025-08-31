@@ -25,16 +25,16 @@ func Run() {
 	if err != nil {
 		log.Fatalf("failed to hash password: %v", err)
 	}
-	ownerUser := factories.UserFactory(func(u *model.User) {
-		u.ID = "00000000-0000-0000-0000-000000000000"
-		u.Email = "owner@example.com"
-		u.Phone = "+14151234567"
-		u.PasswordHash = hashPassword
+	ownerUser := factories.UserFactory(func(user *model.User) {
+		user.ID = "00000000-0000-0000-0000-000000000000"
+		user.UserName = "owner"
+		user.Email = "owner@example.com"
+		user.PasswordHash = hashPassword
 	})
 	exampleUser := factories.UserFactory(func(u *model.User) {
 		u.ID = "00000000-0000-0000-0000-000000000001"
+		u.UserName = "example"
 		u.Email = "example@example.com"
-		u.Phone = "+442071838750"
 		u.PasswordHash = hashPassword
 	})
 	gormDB.Create(ownerUser)
