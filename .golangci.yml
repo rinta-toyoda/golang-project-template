@@ -5,24 +5,44 @@ run:
   tests: true
 
 linters-settings:
-#  gci:
-#    local-prefixes: example.com
+  # Prefer `gci` (actively maintained) for import grouping.
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(example.com)
+    skip-generated: true
+
+  # Keep goimports to fix formatting & respect local prefixes.
   goimports:
     local-prefixes: example.com
-  govet:
-    check-shadowing: true
+
+  # `gocyclo` is deprecated → use `cyclop`.
+  cyclop:
+    max-complexity: 15
+    package-average: false
+    skip-tests: true
+
   lll:
     line-length: 140
+
   misspell:
     locale: US
+
   goconst:
     min-len: 2
     min-occurrences: 3
-  gocyclo:
-    min-complexity: 15
+
   funlen:
     lines: 100
     statements: 50
+
+  # `govet.check-shadowing` was removed upstream.
+  # Use the dedicated `shadow` linter instead (enabled below).
+  govet:
+    # optional: keep useful vet checks explicitly enabled
+    enable:
+      - fieldalignment
 
 linters:
   enable:
@@ -48,6 +68,13 @@ linters:
     - unparam
     - unused
     - whitespace
+    - gci                  # ensure gci is on
+    - cyclop               # replacement for gocyclo
+    - copyloopvar          # replacement for exportloopref (Go 1.22+ loop var rules)
+    - shadow               # replacement for govet.check-shadowing
+  disable:
+    - exportloopref        # disable deprecated linter
+    - gocyclo              # disable deprecated linter
 
 issues:
   exclude-rules:
