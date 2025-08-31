@@ -30,7 +30,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # Let setup-go manage Go module caching (remove your manual actions/cache step)
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -85,10 +84,11 @@ jobs:
           cache: true
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v8  # v2-compatible action
         with:
           version: v2.4.0
-          args: --out-format=colored-line-number --timeout=5m
+          # NOTE: --out-format was removed in v2; use defaults or --output.* flags instead.
+          args: --timeout=5m
 
   security:
     runs-on: ubuntu-latest
