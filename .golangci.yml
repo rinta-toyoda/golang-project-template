@@ -4,7 +4,6 @@ run:
   timeout: 5m
   tests: true
 
-# Formatters are separate from linters in v2
 formatters:
   enable:
     - gci
@@ -27,7 +26,7 @@ linters:
     - errcheck
     - gochecknoinits
     - goconst
-    - cyclop          # use cyclop (gocyclo is deprecated)
+    - cyclop
     - gosec
     - gosimple
     - govet
@@ -41,7 +40,7 @@ linters:
     - unparam
     - unused
     - whitespace
-    - copyloopvar     # replacement for exportloopref
+    - copyloopvar
 
   settings:
     lll:
@@ -52,7 +51,7 @@ linters:
       min-len: 2
       min-occurrences: 3
     cyclop:
-      max-complexity: 15      # keep only supported keys
+      max-complexity: 15
     funlen:
       lines: 100
       statements: 50
@@ -60,13 +59,14 @@ linters:
       enable:
         - fieldalignment
 
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-        - goconst
-        - funlen
-    - path: cmd/
-      linters:
-        - gochecknoinits
+  # v2: use linters.exclusions instead of issues.exclude-rules
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+          - goconst
+          - funlen
+      - path: cmd/
+        linters:
+          - gochecknoinits
