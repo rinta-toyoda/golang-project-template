@@ -4,50 +4,30 @@ run:
   timeout: 5m
   tests: true
 
-linters-settings:
-  # Prefer gci for import grouping (actively maintained)
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(example.com)
-    skip-generated: true
-
-  goimports:
-    local-prefixes: example.com
-
-  # Use cyclop instead of deprecated gocyclo
-  cyclop:
-    max-complexity: 15
-    package-average: false
-    skip-tests: true
-
-  lll:
-    line-length: 140
-
-  misspell:
-    locale: US
-
-  goconst:
-    min-len: 2
-    min-occurrences: 3
-
-  funlen:
-    lines: 100
-    statements: 50
-
-  # (Optional) keep useful vet checks explicitly enabled
-  govet:
-    enable:
-      - fieldalignment
+# Code formatters (v2 config separates these from linters)
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(example.com)
+      custom-order: true
+    goimports:
+      local-prefixes:
+        - example.com
 
 linters:
   enable:
     - bodyclose
     - errcheck
-    - gci
-    - gofmt
-    - goimports
+    - gochecknoinits
+    - goconst
+    - cyclop          # replacement for deprecated gocyclo
     - gosec
     - gosimple
     - govet
@@ -62,22 +42,35 @@ linters:
     - unparam
     - unused
     - whitespace
-    - cyclop
-    - copyloopvar   # replacement for exportloopref on modern Go
+    - copyloopvar     # replacement for deprecated exportloopref
 
-  # Remove deprecated/duplicate toggles
-  disable:
-  # (empty on purpose)
-  # If you need to turn something off, add it here—but do NOT
-  # duplicate anything already enabled above.
+  settings:
+    lll:
+      line-length: 140
+    misspell:
+      locale: US
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+    cyclop:
+      max-complexity: 15
+      package-average: false
+      skip-tests: true
+    funlen:
+      lines: 100
+      statements: 50
+    govet:
+      enable:
+        - fieldalignment
 
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
-        - goconst
-        - funlen
-    - path: cmd/
-      linters:
-        - gochecknoinits
+  # v2-style exclusions live under linters.exclusions
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - errcheck
+          - goconst
+          - funlen
+      - path: cmd/
+        linters:
+          - gochecknoinits

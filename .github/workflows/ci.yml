@@ -9,7 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+    env:
+      GOFLAGS: -modcacherw
+
     services:
       postgres:
         image: postgres:15
@@ -26,89 +28,82 @@ jobs:
           - 5432:5432
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.24.1'
+      # Let setup-go manage Go module caching (remove your manual actions/cache step)
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+          cache: true
 
-    - name: Cache Go modules
-      uses: actions/cache@v3
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Install dependencies
+        run: go mod download
 
-    - name: Install dependencies
-      run: go mod download
+      - name: Verify dependencies
+        run: go mod verify
 
-    - name: Verify dependencies
-      run: go mod verify
+      - name: Run go vet
+        run: go vet ./...
 
-    - name: Run go vet
-      run: go vet ./...
+      - name: Run go fmt check
+        run: |
+          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+            echo "The following files are not formatted:"
+            gofmt -s -l .
+            exit 1
+          fi
 
-    - name: Run go fmt check
-      run: |
-        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-          echo "The following files are not formatted:"
-          gofmt -s -l .
-          exit 1
-        fi
+      - name: Install staticcheck
+        run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
-    - name: Install staticcheck
-      run: go install honnef.co/go/tools/cmd/staticcheck@latest
+      - name: Run staticcheck
+        run: staticcheck ./...
 
-    - name: Run staticcheck
-      run: staticcheck ./...
+      - name: Run tests
+        env:
+          DATABASE_URL: postgres://postgres:password@localhost:5432/app_db?sslmode=disable
+          CSRF_SECRET: test-csrf-secret
+          SESSION_SECRET: test-session-secret
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
 
-    - name: Run tests
-      env:
-        DATABASE_URL: postgres://postgres:password@localhost:5432/app_db?sslmode=disable
-        CSRF_SECRET: test-csrf-secret
-        SESSION_SECRET: test-session-secret
-      run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.out
-        flags: unittests
-        name: codecov-umbrella
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
 
   lint:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      # (optional) if you use only-new-issues:
-      # pull-requests: read
     steps:
       - uses: actions/checkout@v5
+
       - uses: actions/setup-go@v5
         with:
-          go-version: stable
+          go-version: '1.24.x'
+          cache: true
+
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8   # v8 works with golangci-lint v2
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.4.0                        # or 'latest'
-          args: --timeout=5m
+          version: v2.4.0
+          args: --out-format=colored-line-number --timeout=5m
 
   security:
     runs-on: ubuntu-latest
     permissions:
-      security-events: write   # required to upload SARIF
       contents: read
+      security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.24.1'
+          go-version: '1.24.x'
+          cache: true
 
-      # Run gosec and emit SARIF so findings appear under Security > Code scanning
       - name: Run Gosec Security Scanner
         uses: securego/gosec@master
         with:
