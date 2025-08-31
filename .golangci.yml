@@ -5,8 +5,8 @@ run:
   tests: true
 
 linters-settings:
-  gci:
-    local-prefixes: example.com
+#  gci:
+#    local-prefixes: example.com
   goimports:
     local-prefixes: example.com
   govet:

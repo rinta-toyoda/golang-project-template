@@ -96,15 +96,24 @@ jobs:
 
   security:
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # required to upload SARIF
+      contents: read
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.24.1'
+      - uses: actions/checkout@v4
 
-    - name: Run Gosec Security Scanner
-      uses: securecodewarrior/github-action-gosec@master
-      with:
-        args: './...'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.24.1'
+
+      # Run gosec and emit SARIF so findings appear under Security > Code scanning
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: '-no-fail -fmt sarif -out results.sarif ./...'
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
