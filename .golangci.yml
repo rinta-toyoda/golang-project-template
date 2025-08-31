@@ -4,7 +4,7 @@ run:
   timeout: 5m
   tests: true
 
-# Code formatters (v2 config separates these from linters)
+# Code formatters (v2 separates these from linters)
 formatters:
   enable:
     - gci
@@ -30,14 +30,13 @@ linters:
     - cyclop          # replacement for deprecated gocyclo
     - gosec
     - gosimple
-    - govet
+    - govet           # covers type checking in v2
     - ineffassign
     - lll
     - misspell
     - nakedret
     - staticcheck
     - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
@@ -63,7 +62,7 @@ linters:
       enable:
         - fieldalignment
 
-  # v2-style exclusions live under linters.exclusions
+  # v2-style exclusions
   exclusions:
     rules:
       - path: _test\.go
