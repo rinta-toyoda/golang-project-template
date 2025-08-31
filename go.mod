@@ -13,7 +13,7 @@ require (
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/utrack/gin-csrf v0.0.0-20190424104817-40fb8d2c8fca
-	go.uber.org/dig v1.18.0
+	go.uber.org/dig v1.19.0
 	golang.org/x/crypto v0.37.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.25.12
