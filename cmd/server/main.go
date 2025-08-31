@@ -1,32 +1,32 @@
 package main
 
 import (
-	"example.com/internal/db"
-	"example.com/internal/web"
 	"log"
-	"os"
+
+	"example.com/internal/app"
+	"example.com/internal/infrastructure/database"
+	"gorm.io/gorm"
 )
 
 func main() {
-	dbUrl := os.Getenv("DATABASE_URL")
-	if dbUrl == "" {
-		log.Fatal("DATABASE_URL is not set")
-	}
-
-	gormDB, err := db.Connect(dbUrl)
+	container, err := app.BuildContainer()
 	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
+		log.Fatalf("Failed to build container: %v", err)
 	}
 
-	server := web.NewServer(gormDB)
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	// Run database migrations
+	if err := container.Invoke(func(db *gorm.DB) error {
+		return database.Migrate(db)
+	}); err != nil {
+		log.Fatalf("Failed to migrate database: %v", err)
 	}
-	log.Printf("Listening on :%s", port)
 
-	if err := server.Run(":" + port); err != nil {
-		log.Fatalf("server error: %v", err)
+	server, err := app.NewServer(container)
+	if err != nil {
+		log.Fatalf("Failed to create server: %v", err)
+	}
+
+	if err := server.Run(); err != nil {
+		log.Fatalf("Server error: %v", err)
 	}
 }

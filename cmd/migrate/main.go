@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	migrationsPath := "infra/migrations"
+	migrationsPath := "deployments/migrations/migrations"
 	dbUrl := os.Getenv("DATABASE_URL")
 
 	if dbUrl == "" {

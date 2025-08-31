@@ -10,7 +10,6 @@
 package authapi
 
 type SignupResponse struct {
-
 	User User `json:"user"`
 
 	Message string `json:"message"`

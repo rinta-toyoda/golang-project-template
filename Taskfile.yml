@@ -6,66 +6,108 @@ dotenv: ['.env']
 
 tasks:
   default:
+    desc: Start the development environment
     cmds:
       - task: up
 
   install:
+    desc: Install and setup the complete environment
     cmds:
-      - docker-compose up --build -d
+      - docker-compose -f deployments/docker/docker-compose.yml up --build -d
       - task: migrate
 
   up:
+    desc: Start services in development mode
     cmds:
-      - docker-compose up -d db
-      - docker-compose up app
+      - docker-compose -f deployments/docker/docker-compose.yml up -d db
+      - docker-compose -f deployments/docker/docker-compose.yml up app
 
   migrate:
+    desc: Run database migrations and seed data
     cmds:
-      - docker-compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-      - docker-compose exec app go run cmd/migrate/main.go
-      - docker-compose exec app go run cmd/seed/main.go
+      - docker-compose -f deployments/docker/docker-compose.yml exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+      - docker-compose -f deployments/docker/docker-compose.yml exec app go run cmd/migrate/main.go
+      - docker-compose -f deployments/docker/docker-compose.yml exec app go run cmd/seed/main.go
 
   seed:
+    desc: Seed the database with test data
     cmds:
-      - docker-compose exec app go run cmd/seed/main.go
+      - docker-compose -f deployments/docker/docker-compose.yml exec app go run cmd/seed/main.go
 
-  bash:
+  generate:
+    desc: Generate code from OpenAPI specifications
     cmds:
-      - docker-compose exec app bash
+      - ./scripts/generate-api.sh
+
+  build:
+    desc: Build the application
+    cmds:
+      - go build -o build/bin/server ./cmd/server
 
   test:
+    desc: Run all tests
     cmds:
-      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./tests/...
+      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./test/...
+
+  test:unit:
+    desc: Run unit tests only
+    cmds:
+      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./test/unit/...
+
+  test:integration:
+    desc: Run integration tests only
+    cmds:
+      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 ./test/integration/...
 
   coverage:
+    desc: Run tests with coverage report
     cmds:
-      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 -covermode=atomic -coverpkg="$(go list ./internal/...)"  ./...
+      - JWT_SECRET_KEY="test-secret-key" go test -parallel 4 -covermode=atomic -coverpkg="$(go list ./internal/...)" ./test/... -coverprofile=build/coverage.out
+      - go tool cover -html=build/coverage.out -o build/coverage.html
 
   lint:
+    desc: Run code linting
     cmds:
-      - docker-compose run --rm lint
+      - docker-compose -f deployments/docker/docker-compose.yml run --rm lint
+
+  fmt:
+    desc: Format Go code
+    cmds:
+      - go fmt ./...
+
+  tidy:
+    desc: Clean up Go modules
+    cmds:
+      - go mod tidy
+
+  bash:
+    desc: Access application container shell
+    cmds:
+      - docker-compose -f deployments/docker/docker-compose.yml exec app bash
 
   down:
+    desc: Stop all services
     cmds:
-      - docker-compose down
+      - docker-compose -f deployments/docker/docker-compose.yml down
 
   destroy:
+    desc: Stop services and remove all data
     cmds:
-      - docker-compose down --rmi all --volumes --remove-orphans
+      - docker-compose -f deployments/docker/docker-compose.yml down --rmi all --volumes --remove-orphans
 
   db:
+    desc: Access database shell
     cmds:
-      - docker-compose exec db psql -U "$POSTGRES_USER" "$POSTGRES_DB"
+      - docker-compose -f deployments/docker/docker-compose.yml exec db psql -U "$POSTGRES_USER" "$POSTGRES_DB"
+
   migrate:down:
+    desc: Rollback database migrations
     cmds:
-      - docker-compose exec app migrate -path infra/migrations -database "$$DATABASE_URL" down
+      - docker-compose -f deployments/docker/docker-compose.yml exec app migrate -path deployments/migrations/migrations -database "$$DATABASE_URL" down
 
   migrate:redo:
+    desc: Redo last migration
     cmds:
-      - docker-compose exec app migrate -path infra/migrations -database "$$DATABASE_URL" force -1
-      - docker-compose exec app migrate -path infra/migrations -database "$$DATABASE_URL" up
-
-  generate-auth-schema:
-    cmds:
-      - openapi-generator generate -i api/auth/openapi.yaml -g go-gin-server -o ./gen/openapi/auth --global-property=apis,models,apiTests=false,apiDocs=false,modelTests=false,modelDocs=false --additional-properties=packageName=authapi,enumClassPrefix=true
+      - docker-compose -f deployments/docker/docker-compose.yml exec app migrate -path deployments/migrations/migrations -database "$$DATABASE_URL" force -1
+      - docker-compose -f deployments/docker/docker-compose.yml exec app migrate -path deployments/migrations/migrations -database "$$DATABASE_URL" up
 

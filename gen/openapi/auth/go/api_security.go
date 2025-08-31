@@ -17,9 +17,8 @@ type SecurityAPI struct {
 }
 
 // Get /csrf-token
-// Get CSRF token 
+// Get CSRF token
 func (api *SecurityAPI) GetCsrfToken(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
-

@@ -1,33 +1,94 @@
-# example.com-backend
+# Go Project Template
 
-Starting point for a Go project. Ready to use with Docker, Taskfile and Lefthook. You don't need to worry about downloading golang, as it is already included in the Docker image.
+A production-ready Go web application template with clean architecture, dependency injection, and OpenAPI code generation.
+
+## Architecture
+
+This project follows Clean Architecture principles with the following structure:
+
+- `cmd/` - Application entry points
+- `internal/app/` - Application composition and dependency injection
+- `internal/domain/` - Business logic (entities, repositories, services)
+- `internal/infrastructure/` - External concerns (database, HTTP, config)
+- `internal/interfaces/` - Interface adapters (API handlers, middleware)
+- `pkg/` - Public library code
+- `api/` - OpenAPI specifications
+- `gen/` - Generated code from OpenAPI specs
+
+## Features
+
+- Clean Architecture with dependency injection (uber/dig)
+- OpenAPI code generation
+- PostgreSQL with GORM
+- JWT authentication with CSRF protection
+- Session management
+- Docker containerization
+- Comprehensive testing setup
+- Database migrations
+- Structured logging
 
 ## Requirements
-- [docker](https://www.docker.com/get-started/)
-- [task command](https://taskfile.dev/installation/) (for executing commands easier)
-- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) (for installing Lefthook)
-- Lefthook: Run below command to install Lefthook
+
+- [Docker](https://www.docker.com/get-started/)
+- [Task](https://taskfile.dev/installation/) - Task runner
+- [Node.js](https://nodejs.org/) - For Lefthook installation
+
+## Quick Start
+
+1. Install Lefthook for git hooks:
+   ```bash
+   npx lefthook install
+   ```
+
+2. Start the development environment:
+   ```bash
+   task install
+   ```
+
+## Development Commands
+
+| Command | Description |
+|---------|-------------|
+| `task` | Start development environment |
+| `task build` | Build the application |
+| `task test` | Run all tests |
+| `task test:unit` | Run unit tests only |
+| `task test:integration` | Run integration tests only |
+| `task coverage` | Generate test coverage report |
+| `task lint` | Run code linting |
+| `task fmt` | Format Go code |
+| `task generate` | Generate code from OpenAPI specs |
+| `task migrate` | Run database migrations |
+| `task seed` | Seed database with test data |
+| `task down` | Stop all services |
+| `task destroy` | Remove all containers and data |
+
+## Project Structure
+
 ```
-npx lefthook install
+├── api/                    # OpenAPI specifications
+├── build/                  # Build artifacts and Docker files
+├── cmd/                    # Application entry points
+├── configs/                # Configuration files
+├── deployments/            # Deployment configurations
+├── gen/                    # Generated code
+├── internal/               # Private application code
+│   ├── app/               # Composition root and DI container
+│   ├── domain/            # Business logic
+│   └── infrastructure/    # External integrations
+├── pkg/                   # Public library code
+├── scripts/               # Build and utility scripts
+└── test/                  # Test configurations and data
 ```
 
-## Project Commands
-### Run the project (Start containers)
-```
-task
-```
+## Configuration
 
-### Stop the project (Stop containers)
-```
-task down
-```
+Set the following environment variables:
 
-### Run golangci-lint
-```
-task lint
-```
+- `DATABASE_URL` - PostgreSQL connection string
+- `JWT_SECRET_KEY` - Secret key for JWT tokens
+- `PORT` - Server port (default: 8080)
 
-### Delete volumes
-```
-task destroy
-```
+## API Documentation
+
+OpenAPI specifications are located in the `api/` directory. Use `task generate` to regenerate API code after making changes to the specifications.

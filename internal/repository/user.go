@@ -43,7 +43,7 @@ func (repository *userRepository) FindByEmail(email string) (*model.User, error)
 
 func (repository *userRepository) FindByUserNameOrEmail(userNameOrEmail string) (*model.User, error) {
 	var user model.User
-	if err := repository.db.Where("user_name = ? OR email = ?", userNameOrEmail, userNameOrEmail).Delete(&user).Error; err != nil {
+	if err := repository.db.Where("user_name = ? OR email = ?", userNameOrEmail, userNameOrEmail).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

@@ -17,16 +17,15 @@ type AuthUserAPI struct {
 }
 
 // Post /auth/user/login
-// Log in a user 
+// Log in a user
 func (api *AuthUserAPI) UserLogin(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // Post /auth/user/signup
-// Sign up a new user 
+// Sign up a new user
 func (api *AuthUserAPI) UserSignup(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
-

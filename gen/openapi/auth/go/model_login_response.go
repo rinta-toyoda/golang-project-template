@@ -10,7 +10,6 @@
 package authapi
 
 type LoginResponse struct {
-
 	User User `json:"user"`
 
 	Message string `json:"message"`
