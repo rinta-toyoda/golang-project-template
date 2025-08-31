@@ -4,6 +4,7 @@ run:
   timeout: 5m
   tests: true
 
+# v2: formatters are separate from linters
 formatters:
   enable:
     - gci
@@ -26,21 +27,19 @@ linters:
     - errcheck
     - gochecknoinits
     - goconst
-    - cyclop
+    - cyclop            # replaces deprecated gocyclo
     - gosec
-    - gosimple
-    - govet
+    - govet             # vet checks (type-related, etc.)
     - ineffassign
     - lll
     - misspell
     - nakedret
-    - staticcheck
-    - stylecheck
+    - staticcheck       # v2: use this instead of gosimple/stylecheck
     - unconvert
     - unparam
-    - unused
+    - unused            # keep explicit unused checks
     - whitespace
-    - copyloopvar
+    - copyloopvar       # replaces deprecated exportloopref
 
   settings:
     lll:
@@ -59,7 +58,7 @@ linters:
       enable:
         - fieldalignment
 
-  # v2: use linters.exclusions instead of issues.exclude-rules
+  # v2: exclusions live here (not under `issues`)
   exclusions:
     rules:
       - path: _test\.go
