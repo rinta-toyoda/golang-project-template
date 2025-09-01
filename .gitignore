@@ -52,8 +52,5 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 
-# Generated files
-/gen/
-
 # Build artifacts
 /build/tmp/
