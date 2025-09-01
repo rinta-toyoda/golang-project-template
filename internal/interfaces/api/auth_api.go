@@ -38,7 +38,7 @@ func (h *AuthAPIHandler) UserLogin(c *gin.Context) {
 	response, err := h.authService.Login(c.Request.Context(), req)
 	if err != nil {
 		h.logger.Warn("Failed login attempt", "error", err.Error(), "email", req.Email)
-		
+
 		if err.Error() == "invalid credentials" {
 			c.JSON(http.StatusUnauthorized, authapi.Error{Message: "Invalid credentials"})
 		} else {
@@ -63,7 +63,7 @@ func (h *AuthAPIHandler) UserSignup(c *gin.Context) {
 	response, err := h.authService.SignUp(c.Request.Context(), req)
 	if err != nil {
 		h.logger.Error("Failed to create user", "error", err.Error(), "email", req.Email)
-		
+
 		if err.Error() == "user already exists" {
 			c.JSON(http.StatusConflict, authapi.Error{Message: "User already exists"})
 		} else {
@@ -75,4 +75,3 @@ func (h *AuthAPIHandler) UserSignup(c *gin.Context) {
 	h.logger.Info("User created successfully", "user_id", response.User.Id, "email", response.User.Email)
 	c.JSON(http.StatusCreated, response)
 }
-

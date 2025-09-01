@@ -14,15 +14,10 @@ import (
 )
 
 type User struct {
-	Id string `json:"id"`
-
-	Email string `json:"email"`
-
-	Username string `json:"username,omitempty"`
-
-	CreatedAt time.Time `json:"createdAt,omitempty"`
-
-	UpdatedAt time.Time `json:"updatedAt,omitempty"`
-
+	CreatedAt   time.Time `json:"createdAt,omitempty"`
+	UpdatedAt   time.Time `json:"updatedAt,omitempty"`
 	LastLoginAt time.Time `json:"lastLoginAt,omitempty"`
+	Id          string    `json:"id"`
+	Email       string    `json:"email"`
+	Username    string    `json:"username,omitempty"`
 }

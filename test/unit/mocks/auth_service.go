@@ -27,11 +27,3 @@ func (m *MockAuthService) Login(ctx context.Context, req authapi.LoginRequest) (
 	}
 	return nil, args.Error(1)
 }
-
-func (m *MockAuthService) LookupUser(ctx context.Context, email string) (*authapi.UserLookupResponse, error) {
-	args := m.Called(ctx, email)
-	if response := args.Get(0); response != nil {
-		return response.(*authapi.UserLookupResponse), args.Error(1)
-	}
-	return nil, args.Error(1)
-}
