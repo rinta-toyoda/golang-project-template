@@ -3,6 +3,10 @@ version: "2"
 run:
   timeout: 5m
   tests: true
+  # Prevent goanalysis from loading generated/vendor code
+  skip-dirs:
+    - gen
+    - vendor
 
 # v2: formatters are separate from linters
 formatters:
@@ -34,10 +38,10 @@ linters:
     - lll
     - misspell
     - nakedret
-    - staticcheck       # v2: use this instead of gosimple/stylecheck
+    - staticcheck       # covers gosimple/stylecheck in v2
     - unconvert
     - unparam
-    - unused            # keep explicit unused checks
+    - unused
     - whitespace
     - copyloopvar       # replaces deprecated exportloopref
 
@@ -58,7 +62,7 @@ linters:
       enable:
         - fieldalignment
 
-  # v2: exclusions live here (not under `issues`)
+  # v2: exclusions live here (issue filtering; separate from skip-dirs)
   exclusions:
     rules:
       - path: _test\.go
@@ -69,9 +73,11 @@ linters:
       - path: cmd/
         linters:
           - gochecknoinits
-      - path: gen/.*
+      # Extra belt-and-braces filtering if something still leaks through:
+      - path: ^gen/
         linters:
           - gci
           - gofmt
           - goimports
           - govet
+          - staticcheck
