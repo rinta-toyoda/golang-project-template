@@ -67,3 +67,9 @@ linters:
       - path: ^cmd/
         linters:
           - gochecknoinits
+      - path: gen/.*
+        linters:
+          - gci
+          - gofmt
+          - goimports
+          - govet

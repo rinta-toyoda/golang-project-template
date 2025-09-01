@@ -76,3 +76,7 @@ require (
 )
 
 replace example.com => .
+
+replace example.com/gen/openapi/auth/go => ./gen/openapi/auth/go
+
+replace example.com/gen/openapi/v1/go => ./gen/openapi/v1/go
