@@ -94,20 +94,6 @@ jobs:
           go-version: '1.24.x'
           cache: true
 
-      # ---- Generate OpenAPI code BEFORE lint ----
-      - name: Install OpenAPI Generator
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y default-jre
-          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.14.0/openapi-generator-cli-7.14.0.jar -O /tmp/openapi-generator-cli.jar
-          sudo cp /tmp/openapi-generator-cli.jar /usr/local/bin/openapi-generator-cli.jar
-          echo '#!/bin/bash' | sudo tee /usr/local/bin/openapi-generator
-          echo 'java -jar /usr/local/bin/openapi-generator-cli.jar "$@"' | sudo tee -a /usr/local/bin/openapi-generator
-          sudo chmod +x /usr/local/bin/openapi-generator
-
-      - name: Generate OpenAPI code
-        run: ./scripts/generate-api.sh
-
       - name: go mod tidy
         run: go mod tidy
 
