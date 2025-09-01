@@ -47,12 +47,6 @@ func (h *UserAPIHandler) UserLookup(c *gin.Context) {
 		return
 	}
 
-	// Convert authapi.UserLookupResponse to v1api.UserLookupResponse
-	v1Response := &v1api.UserLookupResponse{
-		Username: response.Username,
-		Email:    response.Email,
-	}
-
 	h.logger.Info("User lookup successful", "email", email, "username", response.Username)
-	c.JSON(http.StatusOK, v1Response)
+	c.JSON(http.StatusOK, response)
 }
