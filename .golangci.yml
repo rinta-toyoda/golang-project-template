@@ -3,10 +3,6 @@ version: "2"
 run:
   timeout: 5m
   tests: true
-  # Prevent goanalysis from loading generated/vendor code
-  skip-dirs:
-    - gen
-    - vendor
 
 # v2: formatters are separate from linters
 formatters:
@@ -33,7 +29,7 @@ linters:
     - goconst
     - cyclop            # replaces deprecated gocyclo
     - gosec
-    - govet             # vet checks (type-related, etc.)
+    - govet             # vet/type-related checks
     - ineffassign
     - lll
     - misspell
@@ -62,18 +58,23 @@ linters:
       enable:
         - fieldalignment
 
-  # v2: exclusions live here (issue filtering; separate from skip-dirs)
+  # v2: use path-based exclusions here (not run.skip-dirs / issues.*)
   exclusions:
     rules:
+      # Relax tests a bit
       - path: _test\.go
         linters:
           - errcheck
           - goconst
           - funlen
-      - path: cmd/
+
+      # Don't enforce init rule in CLI entrypoints
+      - path: ^cmd/
         linters:
           - gochecknoinits
-      # Extra belt-and-braces filtering if something still leaks through:
+
+      # Generated/OpenAPI code often can't be type-checked in CI before generation.
+      # Keep formatters and heavy analyzers off these paths.
       - path: ^gen/
         linters:
           - gci
@@ -81,3 +82,15 @@ linters:
           - goimports
           - govet
           - staticcheck
+          - ineffassign
+          - unused
+          - unparam
+          - unconvert
+          - bodyclose
+          - errcheck
+          - gosec
+          - lll
+          - nakedret
+          - whitespace
+          - cyclop
+          - goconst
