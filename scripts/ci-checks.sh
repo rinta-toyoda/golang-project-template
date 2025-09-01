@@ -5,9 +5,9 @@ set -e
 echo "🔍 Running CI checks locally..."
 
 echo "📋 Step 1: Go fmt check"
-if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+if [ "$(gofmt -s -l . | grep -v '^gen/' | wc -l)" -gt 0 ]; then
     echo "❌ The following files are not formatted:"
-    gofmt -s -l .
+    gofmt -s -l . | grep -v '^gen/'
     echo "Run 'go fmt ./...' to fix formatting issues"
     exit 1
 fi

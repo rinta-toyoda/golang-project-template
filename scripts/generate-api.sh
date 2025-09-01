@@ -22,4 +22,9 @@ if [ -f "api/v1/openapi.yaml" ]; then
     --additional-properties=packageName=v1api,enumClassPrefix=true,outputAsLibrary=true
 fi
 
+# Format generated files
+echo "Formatting generated Go files..."
+gofmt -w ./gen/openapi/auth/go/*.go 2>/dev/null || true
+gofmt -w ./gen/openapi/v1/go/*.go 2>/dev/null || true
+
 echo "API generation completed successfully"
