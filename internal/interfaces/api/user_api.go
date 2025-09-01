@@ -6,23 +6,23 @@ import (
 	"github.com/gin-gonic/gin"
 
 	v1api "example.com/gen/openapi/v1/go"
-	userservice "example.com/internal/domain/service/v1"
+	userusecase "example.com/internal/domain/usecase/v1"
 	"example.com/internal/infrastructure/logger"
 )
 
 // UserAPIHandler extends the generated UserLoginAPIAPI with actual business logic
 type UserAPIHandler struct {
 	*v1api.UserLoginAPIAPI
-	userService userservice.Service
-	logger      logger.Logger
+	userLookupUseCase userusecase.UserLookupUseCase
+	logger            logger.Logger
 }
 
 // NewUserAPIHandler creates a new user API handler that extends the generated API
-func NewUserAPIHandler(userService userservice.Service, logger logger.Logger) *UserAPIHandler {
+func NewUserAPIHandler(userLookupUseCase userusecase.UserLookupUseCase, logger logger.Logger) *UserAPIHandler {
 	return &UserAPIHandler{
-		UserLoginAPIAPI: &v1api.UserLoginAPIAPI{},
-		userService:     userService,
-		logger:          logger,
+		UserLoginAPIAPI:   &v1api.UserLoginAPIAPI{},
+		userLookupUseCase: userLookupUseCase,
+		logger:            logger,
 	}
 }
 
@@ -35,7 +35,7 @@ func (h *UserAPIHandler) UserLookup(c *gin.Context) {
 		return
 	}
 
-	response, err := h.userService.LookupUser(c.Request.Context(), email)
+	user, err := h.userLookupUseCase.Call(c.Request.Context(), email)
 	if err != nil {
 		h.logger.Warn("User lookup failed", "error", err.Error(), "email", email)
 
@@ -47,6 +47,12 @@ func (h *UserAPIHandler) UserLookup(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("User lookup successful", "email", email, "username", response.Username)
+	// Convert domain model to API response
+	response := v1api.UserLookupResponse{
+		Username: user.UserName,
+		Email:    user.Email,
+	}
+
+	h.logger.Info("User lookup successful", "email", email, "username", user.UserName)
 	c.JSON(http.StatusOK, response)
 }

@@ -7,6 +7,8 @@ import (
 	"example.com/internal/domain/repository"
 	authservice "example.com/internal/domain/service/auth"
 	userservice "example.com/internal/domain/service/v1"
+	authusecase "example.com/internal/domain/usecase/auth"
+	userusecase "example.com/internal/domain/usecase/v1"
 	"example.com/internal/infrastructure/config"
 	"example.com/internal/infrastructure/database"
 	"example.com/internal/infrastructure/logger"
@@ -65,6 +67,17 @@ func BuildContainer() (*dig.Container, error) {
 		return nil, err
 	}
 	if err := container.Provide(userservice.NewService); err != nil {
+		return nil, err
+	}
+
+	// Use Cases
+	if err := container.Provide(authusecase.NewSignupUseCase); err != nil {
+		return nil, err
+	}
+	if err := container.Provide(authusecase.NewLoginUseCase); err != nil {
+		return nil, err
+	}
+	if err := container.Provide(userusecase.NewUserLookupUseCase); err != nil {
 		return nil, err
 	}
 

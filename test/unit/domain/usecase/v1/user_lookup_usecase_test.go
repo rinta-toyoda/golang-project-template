@@ -10,12 +10,14 @@ import (
 
 	"example.com/internal/domain/entity"
 	userservice "example.com/internal/domain/service/v1"
+	userusecase "example.com/internal/domain/usecase/v1"
 	"example.com/test/unit/mocks"
 )
 
-func TestUserService_FindUserByEmail_Success(t *testing.T) {
+func TestUserLookupUseCase_Call_Success(t *testing.T) {
 	mockRepo := &mocks.MockUserRepository{}
 	userSvc := userservice.NewService(mockRepo)
+	useCase := userusecase.NewUserLookupUseCase(userSvc)
 
 	ctx := context.Background()
 	email := "test@example.com"
@@ -30,40 +32,42 @@ func TestUserService_FindUserByEmail_Success(t *testing.T) {
 
 	mockRepo.On("FindByEmail", ctx, email).Return(expectedUser, nil)
 
-	user, err := userSvc.FindUserByEmail(ctx, email)
+	user, err := useCase.Call(ctx, email)
 
 	assert.NoError(t, err)
 	assert.Equal(t, expectedUser, user)
 	mockRepo.AssertExpectations(t)
 }
 
-func TestUserService_FindUserByEmail_UserNotFound(t *testing.T) {
+func TestUserLookupUseCase_Call_UserNotFound(t *testing.T) {
 	mockRepo := &mocks.MockUserRepository{}
 	userSvc := userservice.NewService(mockRepo)
+	useCase := userusecase.NewUserLookupUseCase(userSvc)
 
 	ctx := context.Background()
 	email := "notfound@example.com"
 
 	mockRepo.On("FindByEmail", ctx, email).Return(nil, errors.New("user not found"))
 
-	user, err := userSvc.FindUserByEmail(ctx, email)
+	user, err := useCase.Call(ctx, email)
 
 	assert.Error(t, err)
 	assert.Nil(t, user)
-	assert.Equal(t, userservice.ErrUserNotFound, err)
+	assert.Equal(t, "user not found", err.Error())
 	mockRepo.AssertExpectations(t)
 }
 
-func TestUserService_FindUserByEmail_DatabaseError(t *testing.T) {
+func TestUserLookupUseCase_Call_DatabaseError(t *testing.T) {
 	mockRepo := &mocks.MockUserRepository{}
 	userSvc := userservice.NewService(mockRepo)
+	useCase := userusecase.NewUserLookupUseCase(userSvc)
 
 	ctx := context.Background()
 	email := "test@example.com"
 
 	mockRepo.On("FindByEmail", ctx, email).Return(nil, errors.New("database connection failed"))
 
-	user, err := userSvc.FindUserByEmail(ctx, email)
+	user, err := useCase.Call(ctx, email)
 
 	assert.Error(t, err)
 	assert.Nil(t, user)

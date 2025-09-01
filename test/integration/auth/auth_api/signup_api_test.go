@@ -15,6 +15,7 @@ import (
 	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/domain/entity"
 	authservice "example.com/internal/domain/service/auth"
+	authusecase "example.com/internal/domain/usecase/auth"
 	"example.com/internal/infrastructure/logger"
 	"example.com/internal/interfaces/api"
 	"example.com/test/unit/mocks"
@@ -26,9 +27,11 @@ func setupSignupRouter() (*gin.Engine, *mocks.MockUserRepository, *mocks.MockPas
 	mockRepo := &mocks.MockUserRepository{}
 	mockHasher := &mocks.MockPasswordHasher{}
 	authSvc := authservice.NewService(mockRepo, mockHasher)
+	signupUseCase := authusecase.NewSignupUseCase(authSvc)
+	loginUseCase := authusecase.NewLoginUseCase(authSvc)
 	testLogger := logger.New("test")
 
-	authAPIHandler := api.NewAuthAPIHandler(authSvc, testLogger)
+	authAPIHandler := api.NewAuthAPIHandler(signupUseCase, loginUseCase, testLogger)
 
 	router := gin.New()
 	auth := router.Group("/auth")

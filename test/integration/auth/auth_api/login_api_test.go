@@ -16,6 +16,7 @@ import (
 	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/domain/entity"
 	authservice "example.com/internal/domain/service/auth"
+	authusecase "example.com/internal/domain/usecase/auth"
 	"example.com/internal/infrastructure/logger"
 	"example.com/internal/interfaces/api"
 	"example.com/test/unit/mocks"
@@ -27,9 +28,11 @@ func setupLoginRouter() (*gin.Engine, *mocks.MockUserRepository, *mocks.MockPass
 	mockRepo := &mocks.MockUserRepository{}
 	mockHasher := &mocks.MockPasswordHasher{}
 	authSvc := authservice.NewService(mockRepo, mockHasher)
+	signupUseCase := authusecase.NewSignupUseCase(authSvc)
+	loginUseCase := authusecase.NewLoginUseCase(authSvc)
 	testLogger := logger.New("test")
 
-	authAPIHandler := api.NewAuthAPIHandler(authSvc, testLogger)
+	authAPIHandler := api.NewAuthAPIHandler(signupUseCase, loginUseCase, testLogger)
 
 	router := gin.New()
 	auth := router.Group("/auth")
@@ -60,6 +63,7 @@ func TestLoginAPI_Success(t *testing.T) {
 
 	mockRepo.On("FindByUserNameOrEmail", mock.Anything, "test@example.com").Return(user, nil)
 	mockHasher.On("Verify", "password123", "hashed_password").Return(true)
+	mockRepo.On("FindByID", mock.Anything, "user-123").Return(user, nil)
 	mockRepo.On("Update", mock.Anything, mock.AnythingOfType("*entity.User")).Return(nil)
 
 	body, _ := json.Marshal(loginReq)

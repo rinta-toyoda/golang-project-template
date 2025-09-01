@@ -6,23 +6,29 @@ import (
 	"github.com/gin-gonic/gin"
 
 	authapi "example.com/gen/openapi/auth/go"
-	authservice "example.com/internal/domain/service/auth"
+	authusecase "example.com/internal/domain/usecase/auth"
 	"example.com/internal/infrastructure/logger"
 )
 
 // AuthAPIHandler extends the generated AuthUserAPI with actual business logic
 type AuthAPIHandler struct {
 	*authapi.AuthUserAPI
-	authService authservice.Service
-	logger      logger.Logger
+	signupUseCase authusecase.SignupUseCase
+	loginUseCase  authusecase.LoginUseCase
+	logger        logger.Logger
 }
 
 // NewAuthAPIHandler creates a new auth API handler that extends the generated API
-func NewAuthAPIHandler(authService authservice.Service, logger logger.Logger) *AuthAPIHandler {
+func NewAuthAPIHandler(
+	signupUseCase authusecase.SignupUseCase,
+	loginUseCase authusecase.LoginUseCase,
+	logger logger.Logger,
+) *AuthAPIHandler {
 	return &AuthAPIHandler{
-		AuthUserAPI: &authapi.AuthUserAPI{},
-		authService: authService,
-		logger:      logger,
+		AuthUserAPI:   &authapi.AuthUserAPI{},
+		signupUseCase: signupUseCase,
+		loginUseCase:  loginUseCase,
+		logger:        logger,
 	}
 }
 
@@ -35,7 +41,7 @@ func (h *AuthAPIHandler) UserLogin(c *gin.Context) {
 		return
 	}
 
-	response, err := h.authService.Login(c.Request.Context(), req)
+	user, err := h.loginUseCase.Call(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		h.logger.Warn("Failed login attempt", "error", err.Error(), "email", req.Email)
 
@@ -47,7 +53,24 @@ func (h *AuthAPIHandler) UserLogin(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("User logged in successfully", "user_id", response.User.Id)
+	// Convert domain model to API response
+	apiUser := authapi.User{
+		Id:        user.ID,
+		Email:     user.Email,
+		Username:  user.UserName,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+	if user.LastLoginAt != nil {
+		apiUser.LastLoginAt = *user.LastLoginAt
+	}
+
+	response := authapi.LoginResponse{
+		User:    apiUser,
+		Message: "Login successful",
+	}
+
+	h.logger.Info("User logged in successfully", "user_id", user.ID)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -60,7 +83,7 @@ func (h *AuthAPIHandler) UserSignup(c *gin.Context) {
 		return
 	}
 
-	response, err := h.authService.SignUp(c.Request.Context(), req)
+	user, err := h.signupUseCase.Call(c.Request.Context(), req.Email, req.Password, req.Username)
 	if err != nil {
 		h.logger.Error("Failed to create user", "error", err.Error(), "email", req.Email)
 
@@ -72,6 +95,23 @@ func (h *AuthAPIHandler) UserSignup(c *gin.Context) {
 		return
 	}
 
-	h.logger.Info("User created successfully", "user_id", response.User.Id, "email", response.User.Email)
+	// Convert domain model to API response
+	apiUser := authapi.User{
+		Id:        user.ID,
+		Email:     user.Email,
+		Username:  user.UserName,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+	if user.LastLoginAt != nil {
+		apiUser.LastLoginAt = *user.LastLoginAt
+	}
+
+	response := authapi.SignupResponse{
+		User:    apiUser,
+		Message: "User created successfully",
+	}
+
+	h.logger.Info("User created successfully", "user_id", user.ID, "email", user.Email)
 	c.JSON(http.StatusCreated, response)
 }

@@ -15,6 +15,7 @@ import (
 	v1api "example.com/gen/openapi/v1/go"
 	"example.com/internal/domain/entity"
 	userservice "example.com/internal/domain/service/v1"
+	userusecase "example.com/internal/domain/usecase/v1"
 	"example.com/internal/infrastructure/logger"
 	"example.com/internal/interfaces/api"
 	"example.com/test/unit/mocks"
@@ -25,9 +26,10 @@ func setupUserLookupRouter() (*gin.Engine, *mocks.MockUserRepository) {
 
 	mockRepo := &mocks.MockUserRepository{}
 	userSvc := userservice.NewService(mockRepo)
+	userLookupUseCase := userusecase.NewUserLookupUseCase(userSvc)
 	testLogger := logger.New("test")
 
-	userAPIHandler := api.NewUserAPIHandler(userSvc, testLogger)
+	userAPIHandler := api.NewUserAPIHandler(userLookupUseCase, testLogger)
 
 	router := gin.New()
 	user := router.Group("/user")

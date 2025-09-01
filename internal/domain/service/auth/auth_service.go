@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 
-	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/domain/entity"
 	"example.com/internal/domain/repository"
 	"example.com/pkg/security"
@@ -19,8 +18,10 @@ var (
 )
 
 type Service interface {
-	SignUp(ctx context.Context, req authapi.SignupRequest) (*authapi.SignupResponse, error)
-	Login(ctx context.Context, req authapi.LoginRequest) (*authapi.LoginResponse, error)
+	CheckUserExists(ctx context.Context, email, username string) error
+	CreateUser(ctx context.Context, email, password, username string) (*entity.User, error)
+	AuthenticateUser(ctx context.Context, email, password string) (*entity.User, error)
+	UpdateLastLogin(ctx context.Context, userID string) error
 }
 
 type service struct {
@@ -35,26 +36,30 @@ func NewService(userRepo repository.UserRepository, hasher security.PasswordHash
 	}
 }
 
-func (s *service) SignUp(ctx context.Context, req authapi.SignupRequest) (*authapi.SignupResponse, error) {
-	if req.Username != "" {
-		if _, err := s.userRepo.FindByUserName(ctx, req.Username); err == nil {
-			return nil, ErrUserAlreadyExists
+func (s *service) CheckUserExists(ctx context.Context, email, username string) error {
+	if username != "" {
+		if _, err := s.userRepo.FindByUserName(ctx, username); err == nil {
+			return ErrUserAlreadyExists
 		}
 	}
 
-	if _, err := s.userRepo.FindByEmail(ctx, req.Email); err == nil {
-		return nil, ErrUserAlreadyExists
+	if _, err := s.userRepo.FindByEmail(ctx, email); err == nil {
+		return ErrUserAlreadyExists
 	}
 
-	hashedPassword, err := s.hasher.Hash(req.Password)
+	return nil
+}
+
+func (s *service) CreateUser(ctx context.Context, email, password, username string) (*entity.User, error) {
+	hashedPassword, err := s.hasher.Hash(password)
 	if err != nil {
 		return nil, err
 	}
 
 	user := &entity.User{
 		ID:           uuid.NewString(),
-		UserName:     req.Username,
-		Email:        req.Email,
+		UserName:     username,
+		Email:        email,
 		PasswordHash: hashedPassword,
 	}
 
@@ -62,52 +67,29 @@ func (s *service) SignUp(ctx context.Context, req authapi.SignupRequest) (*autha
 		return nil, err
 	}
 
-	apiUser := authapi.User{
-		Id:        user.ID,
-		Email:     user.Email,
-		Username:  user.UserName,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-	}
-	if user.LastLoginAt != nil {
-		apiUser.LastLoginAt = *user.LastLoginAt
-	}
-
-	return &authapi.SignupResponse{
-		User:    apiUser,
-		Message: "User created successfully",
-	}, nil
+	return user, nil
 }
 
-func (s *service) Login(ctx context.Context, req authapi.LoginRequest) (*authapi.LoginResponse, error) {
-	user, err := s.userRepo.FindByUserNameOrEmail(ctx, req.Email)
+func (s *service) AuthenticateUser(ctx context.Context, email, password string) (*entity.User, error) {
+	user, err := s.userRepo.FindByUserNameOrEmail(ctx, email)
 	if err != nil {
 		return nil, ErrInvalidCredentials
 	}
 
-	if !s.hasher.Verify(req.Password, user.PasswordHash) {
+	if !s.hasher.Verify(password, user.PasswordHash) {
 		return nil, ErrInvalidCredentials
 	}
 
-	// Update last login time
+	return user, nil
+}
+
+func (s *service) UpdateLastLogin(ctx context.Context, userID string) error {
+	user, err := s.userRepo.FindByID(ctx, userID)
+	if err != nil {
+		return err
+	}
+
 	now := time.Now()
 	user.LastLoginAt = &now
-	if err := s.userRepo.Update(ctx, user); err != nil {
-		// Log error but don't fail login - this is non-critical
-		_ = err
-	}
-
-	apiUser := authapi.User{
-		Id:          user.ID,
-		Email:       user.Email,
-		Username:    user.UserName,
-		CreatedAt:   user.CreatedAt,
-		UpdatedAt:   user.UpdatedAt,
-		LastLoginAt: now,
-	}
-
-	return &authapi.LoginResponse{
-		User:    apiUser,
-		Message: "Login successful",
-	}, nil
+	return s.userRepo.Update(ctx, user)
 }
