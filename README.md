@@ -8,7 +8,7 @@ This project follows Clean Architecture principles with the following structure:
 
 - `cmd/` - Application entry points
 - `internal/app/` - Application composition and dependency injection
-- `internal/domain/` - Business logic (entities, repositories, services)
+- `internal/domain/` - Business logic (entities, repositories, services, use cases)
 - `internal/infrastructure/` - External concerns (database, HTTP, config)
 - `internal/interfaces/` - Interface adapters (API handlers, middleware)
 - `pkg/` - Public library code
