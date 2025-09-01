@@ -36,11 +36,29 @@ jobs:
           go-version: '1.24.x'
           cache: true
 
-      - name: Install dependencies
-        run: go mod download
+      # ---- Generate OpenAPI code BEFORE lint/tests ----
+      - name: Install oapi-codegen
+        run: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
 
-      - name: Verify dependencies
-        run: go mod verify
+      - name: Generate OpenAPI code (no-op if files already exist)
+        run: |
+          mkdir -p gen/openapi/v1/go gen/openapi/auth/go
+
+          # If you keep specs in these default locations, this will generate code.
+          # Adjust the paths or remove lines that don't apply to your repo.
+          if [ -f api/openapi/v1.yaml ]; then
+            oapi-codegen -generate types,client,server -o gen/openapi/v1/go/openapi.gen.go -package openapiv1 api/openapi/v1.yaml
+          fi
+
+          if [ -f api/openapi/auth.yaml ]; then
+            oapi-codegen -generate types,client,server -o gen/openapi/auth/go/openapi.gen.go -package openapiauth api/openapi/auth.yaml
+          fi
+
+          # If the code is already committed, these commands won't hurt.
+          # If you generate code elsewhere, replace the commands above with your own.
+
+      - name: go mod tidy
+        run: go mod tidy
 
       - name: Run go vet
         run: go vet ./...
@@ -83,11 +101,25 @@ jobs:
           go-version: '1.24.x'
           cache: true
 
+      # ---- Generate OpenAPI code BEFORE lint ----
+      - name: Install oapi-codegen
+        run: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
+
+      - name: Generate OpenAPI code (no-op if files already exist)
+        run: |
+          mkdir -p gen/openapi/v1/go gen/openapi/auth/go
+          if [ -f api/openapi/v1.yaml ]; then
+            oapi-codegen -generate types,client,server -o gen/openapi/v1/go/openapi.gen.go -package openapiv1 api/openapi/v1.yaml
+          fi
+          if [ -f api/openapi/auth.yaml ]; then
+            oapi-codegen -generate types,client,server -o gen/openapi/auth/go/openapi.gen.go -package openapiauth api/openapi/auth.yaml
+          fi
+          go mod tidy
+
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8  # v2-compatible action
+        uses: golangci/golangci-lint-action@v8
         with:
           version: v2.4.0
-          # NOTE: --out-format was removed in v2; use defaults or --output.* flags instead.
           args: --timeout=5m
 
   security:

@@ -4,7 +4,6 @@ run:
   timeout: 5m
   tests: true
 
-# v2: formatters are separate from linters
 formatters:
   enable:
     - gci
@@ -27,19 +26,19 @@ linters:
     - errcheck
     - gochecknoinits
     - goconst
-    - cyclop            # replaces deprecated gocyclo
+    - cyclop
     - gosec
-    - govet             # vet/type-related checks
+    - govet
     - ineffassign
     - lll
     - misspell
     - nakedret
-    - staticcheck       # covers gosimple/stylecheck in v2
+    - staticcheck
     - unconvert
     - unparam
     - unused
     - whitespace
-    - copyloopvar       # replaces deprecated exportloopref
+    - copyloopvar
 
   settings:
     lll:
@@ -58,39 +57,13 @@ linters:
       enable:
         - fieldalignment
 
-  # v2: use path-based exclusions here (not run.skip-dirs / issues.*)
   exclusions:
     rules:
-      # Relax tests a bit
       - path: _test\.go
         linters:
           - errcheck
           - goconst
           - funlen
-
-      # Don't enforce init rule in CLI entrypoints
       - path: ^cmd/
         linters:
           - gochecknoinits
-
-      # Generated/OpenAPI code often can't be type-checked in CI before generation.
-      # Keep formatters and heavy analyzers off these paths.
-      - path: ^gen/
-        linters:
-          - gci
-          - gofmt
-          - goimports
-          - govet
-          - staticcheck
-          - ineffassign
-          - unused
-          - unparam
-          - unconvert
-          - bodyclose
-          - errcheck
-          - gosec
-          - lll
-          - nakedret
-          - whitespace
-          - cyclop
-          - goconst
