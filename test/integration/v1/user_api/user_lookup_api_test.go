@@ -13,13 +13,11 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	v1api "example.com/gen/openapi/v1/go"
-	"example.com/internal/domain/enti
-	v1api "example.com/gen/openapi/v1/go"
 	"example.com/internal/domain/entity"
 	userservice "example.com/internal/domain/service/v1"
 	"example.com/internal/infrastructure/logger"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	"example.com/internal/interfaces/api"
+	"example.com/test/unit/mocks"
 )
 
 func setupUserLookupRouter() (*gin.Engine, *mocks.MockUserRepository) {

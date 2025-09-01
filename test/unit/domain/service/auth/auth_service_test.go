@@ -8,11 +8,9 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	authapi "example.com/gen/openapi/auth/go"
-	"example.com/inte
-	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/domain/entity"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	authservice "example.com/internal/domain/service/auth"
+	"example.com/test/unit/mocks"
 )
 
 func TestAuthService_SignUp(t *testing.T) {

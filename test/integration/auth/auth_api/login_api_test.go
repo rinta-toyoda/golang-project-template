@@ -14,13 +14,11 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	authapi "example.com/gen/openapi/auth/go"
-	"example.com/internal/domain/entity
-	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/domain/entity"
 	authservice "example.com/internal/domain/service/auth"
 	"example.com/internal/infrastructure/logger"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
+	"example.com/internal/interfaces/api"
+	"example.com/test/unit/mocks"
 )
 
 func setupLoginRouter() (*gin.Engine, *mocks.MockUserRepository, *mocks.MockPasswordHasher) {
