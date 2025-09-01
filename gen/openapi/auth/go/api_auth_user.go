@@ -14,55 +14,99 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"example.com/internal/infrastructure/logger"
 )
 
 type AuthService interface {
 	SignUp(ctx context.Context, req SignupRequest) (*SignupResponse, error)
 	Login(ctx context.Context, req LoginRequest) (*LoginResponse, error)
+	LookupUser(ctx context.Context, email string) (*UserLookupResponse, error)
 }
 
 type AuthUserAPI struct {
 	authService AuthService
+	logger      logger.Logger
 }
 
-func NewAuthUserAPI(authService AuthService) *AuthUserAPI {
+func NewAuthUserAPI(authService AuthService, logger logger.Logger) *AuthUserAPI {
 	return &AuthUserAPI{
 		authService: authService,
+		logger:      logger,
 	}
 }
 
-// Post /auth/user/login
-// Log in a user
+// UserLogin handles user login
 func (api *AuthUserAPI) UserLogin(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		api.logger.Warn("Invalid login request", "error", err.Error())
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid request format"})
 		return
 	}
 
 	response, err := api.authService.Login(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, Error{Message: err.Error()})
+		api.logger.Warn("Failed login attempt", "error", err.Error(), "email", req.Email)
+
+		if err.Error() == "invalid credentials" {
+			c.JSON(http.StatusUnauthorized, Error{Message: "Invalid credentials"})
+		} else {
+			c.JSON(http.StatusInternalServerError, Error{Message: "Internal server error"})
+		}
 		return
 	}
 
+	api.logger.Info("User logged in successfully", "user_id", response.User.Id)
 	c.JSON(http.StatusOK, response)
 }
 
-// Post /auth/user/signup
-// Sign up a new user
+// UserLookup handles user lookup by email
+func (api *AuthUserAPI) UserLookup(c *gin.Context) {
+	email := c.Query("email")
+	if email == "" {
+		api.logger.Warn("Missing email parameter in lookup request")
+		c.JSON(http.StatusBadRequest, Error{Message: "Email parameter is required"})
+		return
+	}
+
+	response, err := api.authService.LookupUser(c.Request.Context(), email)
+	if err != nil {
+		api.logger.Warn("User lookup failed", "error", err.Error(), "email", email)
+
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, Error{Message: "User not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, Error{Message: "Internal server error"})
+		}
+		return
+	}
+
+	api.logger.Info("User lookup successful", "email", email, "username", response.Username)
+	c.JSON(http.StatusOK, response)
+}
+
+// UserSignup handles user registration
 func (api *AuthUserAPI) UserSignup(c *gin.Context) {
 	var req SignupRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		api.logger.Warn("Invalid signup request", "error", err.Error())
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid request format"})
 		return
 	}
 
 	response, err := api.authService.SignUp(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusConflict, Error{Message: err.Error()})
+		api.logger.Error("Failed to create user", "error", err.Error(), "email", req.Email)
+
+		if err.Error() == "user already exists" {
+			c.JSON(http.StatusConflict, Error{Message: "User already exists"})
+		} else {
+			c.JSON(http.StatusInternalServerError, Error{Message: "Internal server error"})
+		}
 		return
 	}
 
+	api.logger.Info("User created successfully", "user_id", response.User.Id, "email", response.User.Email)
 	c.JSON(http.StatusCreated, response)
 }

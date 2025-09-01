@@ -22,6 +22,7 @@ var (
 type AuthService interface {
 	SignUp(ctx context.Context, req authapi.SignupRequest) (*authapi.SignupResponse, error)
 	Login(ctx context.Context, req authapi.LoginRequest) (*authapi.LoginResponse, error)
+	LookupUser(ctx context.Context, email string) (*authapi.UserLookupResponse, error)
 }
 
 type authService struct {
@@ -110,5 +111,17 @@ func (s *authService) Login(ctx context.Context, req authapi.LoginRequest) (*aut
 	return &authapi.LoginResponse{
 		User:    apiUser,
 		Message: "Login successful",
+	}, nil
+}
+
+func (s *authService) LookupUser(ctx context.Context, email string) (*authapi.UserLookupResponse, error) {
+	user, err := s.userRepo.FindByEmail(ctx, email)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	return &authapi.UserLookupResponse{
+		Username: user.UserName,
+		Email:    user.Email,
 	}, nil
 }

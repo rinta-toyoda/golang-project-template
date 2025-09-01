@@ -11,6 +11,6 @@ package authapi
 
 type CsrfToken struct {
 
-	// Include in `X-CSRF-Token` header
+	// Include in `X-XSRF-TOKEN` header
 	Token string `json:"token"`
 }
