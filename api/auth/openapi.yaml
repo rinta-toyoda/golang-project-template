@@ -89,37 +89,6 @@ paths:
           description: Server error
           content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
 
-  /auth/user/lookup:
-    get:
-      tags: [Auth (User)]
-      summary: Get username by email
-      operationId: userLookup
-      security:
-        - XsrfHeaderAuth: []
-      parameters:
-        - name: email
-          in: query
-          required: true
-          schema:
-            type: string
-            format: email
-          description: User email to lookup
-      responses:
-        '200':
-          description: User found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserLookupResponse'
-        '400':
-          description: Bad request
-          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
-        '404':
-          description: User not found
-          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
-        '500':
-          description: Server error
-          content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
 
 components:
   securitySchemes:
@@ -173,14 +142,6 @@ components:
         message: { type: string, example: logged in }
         # accessToken: { type: string }
         # refreshToken: { type: string }
-
-    UserLookupResponse:
-      type: object
-      additionalProperties: false
-      required: [username]
-      properties:
-        username: { type: string }
-        email: { type: string, format: email }
 
     User:
       type: object

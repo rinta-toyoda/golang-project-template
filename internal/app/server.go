@@ -9,9 +9,9 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/dig"
 
-	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/infrastructure/config"
 	"example.com/internal/infrastructure/logger"
+	"example.com/internal/interfaces/api"
 	"example.com/internal/interfaces/middleware"
 )
 
@@ -24,16 +24,19 @@ type Server struct {
 func NewServer(container *dig.Container) (*Server, error) {
 	var cfg *config.Config
 	var log logger.Logger
-	var authUserAPI *authapi.AuthUserAPI
+	var authAPIHandler *api.AuthAPIHandler
+	var userAPIHandler *api.UserAPIHandler
 
 	if err := container.Invoke(func(
 		c *config.Config,
 		l logger.Logger,
-		aua *authapi.AuthUserAPI,
+		aah *api.AuthAPIHandler,
+		uah *api.UserAPIHandler,
 	) {
 		cfg = c
 		log = l
-		authUserAPI = aua
+		authAPIHandler = aah
+		userAPIHandler = uah
 	}); err != nil {
 		return nil, fmt.Errorf("failed to resolve dependencies: %w", err)
 	}
@@ -64,7 +67,7 @@ func NewServer(container *dig.Container) (*Server, error) {
 	engine.Use(middleware.CSRF(cfg.Security.CSRFSecret))
 
 	// Routes
-	setupRoutes(engine, authUserAPI)
+	setupRoutes(engine, authAPIHandler, userAPIHandler)
 
 	return &Server{
 		engine: engine,
@@ -80,7 +83,7 @@ func (s *Server) Run() error {
 	return s.engine.Run(addr)
 }
 
-func setupRoutes(engine *gin.Engine, authUserAPI *authapi.AuthUserAPI) {
+func setupRoutes(engine *gin.Engine, authAPIHandler *api.AuthAPIHandler, userAPIHandler *api.UserAPIHandler) {
 	// Serve OpenAPI specs first
 	engine.Static("/api/auth", "./api/auth")
 	engine.Static("/api/v1", "./api/v1")
@@ -99,9 +102,14 @@ func setupRoutes(engine *gin.Engine, authUserAPI *authapi.AuthUserAPI) {
 			auth := v1.Group("/auth")
 			auth.Use(middleware.RequireXSRF())
 			{
-				auth.POST("/signup", authUserAPI.UserSignup)
-				auth.POST("/login", authUserAPI.UserLogin)
-				auth.GET("/user/lookup", authUserAPI.UserLookup)
+				auth.POST("/signup", authAPIHandler.UserSignup)
+				auth.POST("/login", authAPIHandler.UserLogin)
+			}
+
+			user := v1.Group("/user")
+			user.Use(middleware.RequireXSRF())
+			{
+				user.GET("/lookup", userAPIHandler.UserLookup)
 			}
 		}
 	}
@@ -110,8 +118,7 @@ func setupRoutes(engine *gin.Engine, authUserAPI *authapi.AuthUserAPI) {
 	legacyAuth := engine.Group("/auth/user")
 	legacyAuth.Use(middleware.RequireXSRF())
 	{
-		legacyAuth.POST("/signup", authUserAPI.UserSignup)
-		legacyAuth.POST("/login", authUserAPI.UserLogin)
-		legacyAuth.GET("/lookup", authUserAPI.UserLookup)
+		legacyAuth.POST("/signup", authAPIHandler.UserSignup)
+		legacyAuth.POST("/login", authAPIHandler.UserLogin)
 	}
 }

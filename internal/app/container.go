@@ -4,12 +4,13 @@ import (
 	"go.uber.org/dig"
 	"gorm.io/gorm"
 
-	authapi "example.com/gen/openapi/auth/go"
 	"example.com/internal/domain/repository"
-	"example.com/internal/domain/service"
+	authservice "example.com/internal/domain/service/auth"
+	userservice "example.com/internal/domain/service/v1"
 	"example.com/internal/infrastructure/config"
 	"example.com/internal/infrastructure/database"
 	"example.com/internal/infrastructure/logger"
+	"example.com/internal/interfaces/api"
 	"example.com/pkg/security"
 )
 
@@ -60,12 +61,18 @@ func BuildContainer() (*dig.Container, error) {
 	}
 
 	// Services
-	if err := container.Provide(service.NewAuthService); err != nil {
+	if err := container.Provide(authservice.NewService); err != nil {
+		return nil, err
+	}
+	if err := container.Provide(userservice.NewService); err != nil {
 		return nil, err
 	}
 
 	// API Handlers
-	if err := container.Provide(authapi.NewAuthUserAPI); err != nil {
+	if err := container.Provide(api.NewAuthAPIHandler); err != nil {
+		return nil, err
+	}
+	if err := container.Provide(api.NewUserAPIHandler); err != nil {
 		return nil, err
 	}
 

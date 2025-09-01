@@ -11,9 +11,62 @@ tags:
   - name: User Login API
     description: CRUD operations on User
 
+paths:
+  /user/lookup:
+    get:
+      tags:
+        - User Login API
+      summary: Get username by email
+      operationId: userLookup
+      parameters:
+        - name: email
+          in: query
+          required: true
+          schema:
+            type: string
+            format: email
+      responses:
+        '200':
+          description: User lookup successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLookupResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     sessionAuth:        # cookie‑based session (maps to your Gin session middleware)
       type: apiKey
       in: cookie
       name: session_id
+  
+  schemas:
+    UserLookupResponse:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+    
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
