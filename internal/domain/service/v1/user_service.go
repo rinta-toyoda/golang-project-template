@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	authapi "example.com/gen/openapi/auth/go"
+	v1api "example.com/gen/openapi/v1/go"
 	"example.com/internal/domain/repository"
 )
 
@@ -13,7 +13,7 @@ var (
 )
 
 type Service interface {
-	LookupUser(ctx context.Context, email string) (*authapi.UserLookupResponse, error)
+	LookupUser(ctx context.Context, email string) (*v1api.UserLookupResponse, error)
 }
 
 type service struct {
@@ -26,7 +26,7 @@ func NewService(userRepo repository.UserRepository) Service {
 	}
 }
 
-func (s *service) LookupUser(ctx context.Context, email string) (*authapi.UserLookupResponse, error) {
+func (s *service) LookupUser(ctx context.Context, email string) (*v1api.UserLookupResponse, error) {
 	user, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
 		if err.Error() == "user not found" {
@@ -35,7 +35,7 @@ func (s *service) LookupUser(ctx context.Context, email string) (*authapi.UserLo
 		return nil, err
 	}
 
-	return &authapi.UserLookupResponse{
+	return &v1api.UserLookupResponse{
 		Username: user.UserName,
 		Email:    user.Email,
 	}, nil
