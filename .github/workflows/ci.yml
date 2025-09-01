@@ -37,25 +37,18 @@ jobs:
           cache: true
 
       # ---- Generate OpenAPI code BEFORE lint/tests ----
-      - name: Install oapi-codegen
-        run: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-
-      - name: Generate OpenAPI code (no-op if files already exist)
+      - name: Install OpenAPI Generator
         run: |
-          mkdir -p gen/openapi/v1/go gen/openapi/auth/go
+          sudo apt-get update
+          sudo apt-get install -y default-jre
+          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.14.0/openapi-generator-cli-7.14.0.jar -O /tmp/openapi-generator-cli.jar
+          sudo cp /tmp/openapi-generator-cli.jar /usr/local/bin/openapi-generator-cli.jar
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/openapi-generator
+          echo 'java -jar /usr/local/bin/openapi-generator-cli.jar "$@"' | sudo tee -a /usr/local/bin/openapi-generator
+          sudo chmod +x /usr/local/bin/openapi-generator
 
-          # If you keep specs in these default locations, this will generate code.
-          # Adjust the paths or remove lines that don't apply to your repo.
-          if [ -f api/openapi/v1.yaml ]; then
-            oapi-codegen -generate types,client,server -o gen/openapi/v1/go/openapi.gen.go -package openapiv1 api/openapi/v1.yaml
-          fi
-
-          if [ -f api/openapi/auth.yaml ]; then
-            oapi-codegen -generate types,client,server -o gen/openapi/auth/go/openapi.gen.go -package openapiauth api/openapi/auth.yaml
-          fi
-
-          # If the code is already committed, these commands won't hurt.
-          # If you generate code elsewhere, replace the commands above with your own.
+      - name: Generate OpenAPI code
+        run: ./scripts/generate-api.sh
 
       - name: go mod tidy
         run: go mod tidy
@@ -102,19 +95,21 @@ jobs:
           cache: true
 
       # ---- Generate OpenAPI code BEFORE lint ----
-      - name: Install oapi-codegen
-        run: go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@latest
-
-      - name: Generate OpenAPI code (no-op if files already exist)
+      - name: Install OpenAPI Generator
         run: |
-          mkdir -p gen/openapi/v1/go gen/openapi/auth/go
-          if [ -f api/openapi/v1.yaml ]; then
-            oapi-codegen -generate types,client,server -o gen/openapi/v1/go/openapi.gen.go -package openapiv1 api/openapi/v1.yaml
-          fi
-          if [ -f api/openapi/auth.yaml ]; then
-            oapi-codegen -generate types,client,server -o gen/openapi/auth/go/openapi.gen.go -package openapiauth api/openapi/auth.yaml
-          fi
-          go mod tidy
+          sudo apt-get update
+          sudo apt-get install -y default-jre
+          wget https://repo1.maven.org/maven2/org/openapitools/openapi-generator-cli/7.14.0/openapi-generator-cli-7.14.0.jar -O /tmp/openapi-generator-cli.jar
+          sudo cp /tmp/openapi-generator-cli.jar /usr/local/bin/openapi-generator-cli.jar
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/openapi-generator
+          echo 'java -jar /usr/local/bin/openapi-generator-cli.jar "$@"' | sudo tee -a /usr/local/bin/openapi-generator
+          sudo chmod +x /usr/local/bin/openapi-generator
+
+      - name: Generate OpenAPI code
+        run: ./scripts/generate-api.sh
+
+      - name: go mod tidy
+        run: go mod tidy
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v8
